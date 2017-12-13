@@ -1,7 +1,23 @@
-﻿@{
+﻿@model IEnumerable<PersonalFinanceApplication.Models.Column>
+@{
     ViewBag.Title = "About";
 }
 <h2>@ViewBag.Title.</h2>
 <h3>@ViewBag.Message</h3>
 
 <p>Use this area to provide additional information.</p>
+
+@foreach(var column in Model)
+{
+    <p>@column.ColumnNumber: @column.ExampleValue</p>
+}
+
+@foreach(var row in ViewBag.table)
+{
+    foreach(var value in row)
+    {
+        @value 
+    }
+
+    <br/>
+}
