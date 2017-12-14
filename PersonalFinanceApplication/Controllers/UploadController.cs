@@ -62,7 +62,7 @@ namespace PersonalFinanceApplication.Controllers
         // GET: Upload/ResolveFailedRows
         public ActionResult ResolveFailedRows()
         {
-            var failedrows = TempData["failedrows"] as Dictionary<Transaction, string[]>;
+            var failedrows = TempData["failedrows"] as Dictionary<string[], string>;
             return View(failedrows);
         }
 
@@ -114,43 +114,72 @@ namespace PersonalFinanceApplication.Controllers
             parser.SetDelimiters(new string[] { "," });
 
             //This dictionary will contain all the transactions that failed to save to the db and their associated row information
-            Dictionary<Transaction, string[]> FailedRows = new Dictionary<Transaction, string[]>();
+            Dictionary<string[], string> FailedRows = new Dictionary<string[], string>();
 
             //parse through each row, grab the information from appropiate columns, create a new transaction, and add it to the db
             //if the row is invalid, add it to the failed rows list
-            int i = 0;
             while (!parser.EndOfData)
             {
                 //Parse through the next row in the file
                 string[] row = parser.ReadFields();
 
+                //These are the variables we will need to create a new transaction
+                DateTime date = new DateTime();
+                decimal amount = new decimal();
+                string description = "";
 
-                DateTime date = Convert.ToDateTime(row[DateColumn]);
-                Decimal amount = Decimal.Parse(row[AmountColumn]);
-                Transaction transaction = new Transaction(date, amount, row[DescriptionColumn]);
+                //Error Message variables
+                string ErrorMessage = "";
+                bool ValidRow = true;
 
-                try
+                //Determine if the date field can be converted to a date
+                try { date = Convert.ToDateTime(row[DateColumn]); }
+                catch { ErrorMessage = "Invalid Date"; ValidRow = false; }
+
+                //Determine if the amount field can be converted to a decimal
+                try { amount = Decimal.Parse(row[AmountColumn]); }
+                catch { ErrorMessage = "Invalid Amount"; ValidRow = false; }
+
+                //Determine if the description field has a value
+                if (row[DescriptionColumn] != null) { description = row[DescriptionColumn]; }
+                else { ErrorMessage = "Invalid Description"; ValidRow = false; }
+
+                //Create a transaction from the row and add it to the db if all the fields are valid
+                if(ValidRow)
                 {
-                    db.Transactions.Add(transaction);
-                    db.SaveChanges();
+                    try
+                    {
+                        //Try to add the transaction to the db.
+                        Transaction transaction = new Transaction(date, amount, description);
+                        db.Transactions.Add(transaction);
+                        db.SaveChanges();
+                    }
+                    catch (Exception ex)
+                    {
+                        //If there is an exception, add an error message and mark the row as invalid
+                        ErrorMessage = "This row has already been added";
+                        ValidRow = false;
+                    }
                 }
-                catch(Exception ex)
+
+                if(!ValidRow)
                 {
-                    //Violation of Unique Constraint.  InnerException.Class = 14
-                    //EntityValidationErrors.  EntityValidationErros.Count > 0
-                    FailedRows.Add(transaction, row);
-                    i++;
+                    //If the row is invalid add it to the invalid rows dictionary along with the error message
+                    string[] failedrow = { row[DateColumn], row[DescriptionColumn], row[AmountColumn] };
+                    FailedRows.Add(failedrow, ErrorMessage );
                 }
             }
 
-            //If there are failed rows, redirect to ResolveFailedRows action, else return to UploadConfirmed action
+            
             if(FailedRows.Count > 0)
             {
+                //If there are failed rows, redirect to ResolveFailedRows action
                 TempData["failedrows"] = FailedRows;
                 return RedirectToAction("ResolveFailedRows");
             }
             else
             {
+                //If there are no failed rows, redirect to Confirmed action
                 return RedirectToAction("Index");
             }
 
