@@ -16,8 +16,9 @@ namespace PersonalFinanceApplication.Controllers
         private FinanceContext db = new FinanceContext();
 
         // GET: Upload
-        public ActionResult Index()
+        public ActionResult Index(string message)
         {
+            ViewBag.Message = message;
             return View();
         }
 
@@ -65,27 +66,32 @@ namespace PersonalFinanceApplication.Controllers
             return View(failedrows);
         }
 
-        // POST: Upload
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
+
+        /* POST: Upload
+         * 
+         * This action validates that the user is uploading a csv file and then saves it as import.csv.  
+         * If the upload is successful, the program continues to the SelectColumns action
+         */
         [HttpPost]
         //[ValidateAntiForgeryToken]
         public ActionResult UploadFile(HttpPostedFileBase file)
         {
             try
             {
-                if (file.ContentLength > 0)
+                if (file.ContentLength > 0 && file.FileName.Substring(file.FileName.Length - 4, 4) == ".csv")
                 {
                     string FilePath = Path.Combine(Server.MapPath("~/Content/csv/import.csv"));
                     file.SaveAs(FilePath);
+                    return RedirectToAction("SelectColumns");
                 }
-                ViewBag.Message = "File Uploaded Successfully!!";
-                return RedirectToAction("SelectColumns");
+                else
+                {
+                    return RedirectToAction("Index", new { message = "Please upload a valid .csv file" });
+                }
             }
             catch
             {
-                ViewBag.Message = "File upload failed!!";
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", new { message = "File upload failed! Please Try Again" } );
             }
         }
 
