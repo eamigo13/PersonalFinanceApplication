@@ -7,9 +7,9 @@ using System.Web;
 
 namespace PersonalFinanceApplication.DAL
 {
-    public class PersonalFinanceApplicationContext : DbContext
+    public class FinanceContext : DbContext
     {
-        public PersonalFinanceApplicationContext() : base("PersonalFinanceApplicationContext")
+        public FinanceContext() : base("FinanceContext")
         {
 
         }

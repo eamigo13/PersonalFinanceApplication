@@ -9,6 +9,14 @@ namespace PersonalFinanceApplication.Models
     [Table("Transaction")]
     public partial class Transaction
     {
+        //Constructor
+        public Transaction(DateTime Date, decimal Amount, string Description)
+        {
+            this.Date = Date;
+            this.Amount = Amount;
+            this.Description = Description;
+        }
+
         public int TransactionID { get; set; }
 
         [Required]

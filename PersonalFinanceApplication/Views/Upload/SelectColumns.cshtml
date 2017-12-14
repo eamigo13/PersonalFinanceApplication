@@ -1,0 +1,14 @@
+﻿@model IEnumerable<PersonalFinanceApplication.Models.Column>
+@{
+    ViewBag.Title = "Select Columns";
+}
+
+@using (Html.BeginForm("SelectColumns", "Upload", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+
+    @Html.DropDownList("DateColumn", new SelectList(Model, "ColumnNumber", "ExampleValue"), "Select the date")
+    @Html.DropDownList("AmountColumn", new SelectList(Model, "ColumnNumber", "ExampleValue"), "Select the amount")
+    @Html.DropDownList("DescriptionColumn", new SelectList(Model, "ColumnNumber", "ExampleValue"), "Select the description")
+    <input type="submit" value="Submit" />
+
+}

@@ -1,0 +1,35 @@
+﻿@using PersonalFinanceApplication.Models
+@model Dictionary<Transaction, string[]>
+@{
+    ViewBag.Title = "ResolveFailedRows";
+}
+
+<h2>ResolveFailedRows</h2>
+
+<table style="width:100%">
+    <tr>
+        <th>Date</th>
+        <th>Description</th>
+        <th>Amount</th>
+        <th>All Information from File</th>
+    </tr>
+    
+    @foreach (KeyValuePair<Transaction, string[]> item in Model)
+    {
+        <tr>
+            <td>@item.Key.Date.ToString("MM/dd/yyyy")</td>
+            <td>@item.Key.Description</td>
+            <td>@item.Key.Amount</td>
+            <td>
+                @foreach(var value in item.Value)
+                {
+                    <em>@value, </em>
+                }
+            </td>
+        </tr>
+    }
+
+</table>
+
+
+
