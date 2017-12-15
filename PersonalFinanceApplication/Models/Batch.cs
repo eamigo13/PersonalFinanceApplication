@@ -15,7 +15,12 @@ namespace PersonalFinanceApplication.Models
             Transactions = new HashSet<Transaction>();
         }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public Batch(DateTime UploadDate)
+        {
+            this.UploadDate = UploadDate;
+            Transactions = new HashSet<Transaction>();
+        }
+
         public int BatchID { get; set; }
 
         public DateTime? UploadDate { get; set; }

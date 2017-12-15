@@ -31,6 +31,19 @@ CREATE TABLE [Category] (
   PRIMARY KEY ([CategoryID])
 );
 
+CREATE TABLE Batch (
+  BatchID int identity(1,1),
+  UploadDate datetime,
+  SuccessRows int,
+  FailedRows int,
+  PRIMARY KEY (BatchID)
+);
+
+CREATE TABLE Status(
+	StatusID int identity(0,1) PRIMARY KEY,
+	StatusDesc nvarchar(50)
+);
+
 CREATE TABLE [Transaction] (
   [TransactionID] int identity(1,1),
   [Description] nvarchar(100) NOT NULL,
@@ -39,6 +52,8 @@ CREATE TABLE [Transaction] (
   [AccountID] int FOREIGN KEY REFERENCES Account(AccountID),
   [VendorID] int FOREIGN KEY REFERENCES Vendor(VendorID),
   [CategoryID] int FOREIGN KEY REFERENCES Category(CategoryID),
+  [BatchID] int FOREIGN KEY REFERENCES Batch(BatchID),
+  [StatusID] int FOREIGN KEY REFERENCES Status(StatusID) DEFAULT 0,
   PRIMARY KEY ([TransactionID]),
   CONSTRAINT UniqueTransaction UNIQUE (Description, Date, Amount)
 );

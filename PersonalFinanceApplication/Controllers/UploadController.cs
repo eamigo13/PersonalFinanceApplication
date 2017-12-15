@@ -8,6 +8,7 @@ using PersonalFinanceApplication.Models;
 using PersonalFinanceApplication.DAL;
 using System.IO;
 using System.Data.Entity.Validation;
+using System.Data.Entity;
 
 namespace PersonalFinanceApplication.Controllers
 {
@@ -99,12 +100,13 @@ namespace PersonalFinanceApplication.Controllers
             }
         }
 
-        // POST: Upload/SelectColumns
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
-        /* This action associates the columns in the csv file to the transaction information 
-         * according to the user's input.  
+
+        /* POST: Upload/SelectColumns
+         * 
+         * This action associates the columns in the csv file to the transaction information 
+         * according to the user's input.  It then creates each transaction and saves it to the db.  
          */
+
         [HttpPost]
         //[ValidateAntiForgeryToken]
         public ActionResult SelectColumns([Bind(Include = "AccountID")] int AccountID, 
@@ -112,6 +114,15 @@ namespace PersonalFinanceApplication.Controllers
                                           [Bind(Include = "AmountColumn")] int AmountColumn,
                                           [Bind(Include = "DescriptionColumn")] int DescriptionColumn)
         {
+            //Create a new batch and save it to the db.
+            Batch batch = new Batch(DateTime.Now);
+            db.Batches.Add(batch);
+            db.SaveChanges();
+
+            //Variables that track how many rows have succeeded and failed
+            int SuccessCount = 0;
+            int FailCount = 0;
+
             //Create a new parser to parse through the csv file
             string FilePath = Path.Combine(Server.MapPath("~/Content/csv/import.csv"));
             var parser = new TextFieldParser(FilePath);
@@ -152,16 +163,19 @@ namespace PersonalFinanceApplication.Controllers
                 //Create a transaction from the row and add it to the db if all the fields are valid
                 if(ValidRow)
                 {
+                    Transaction transaction = new Transaction(batch.BatchID, AccountID, date, description, amount);
+
                     try
                     {
                         //Try to add the transaction to the db.
-                        Transaction transaction = new Transaction(AccountID, date, description, amount);
+                        
                         db.Transactions.Add(transaction);
                         db.SaveChanges();
                     }
                     catch (Exception ex)
                     {
                         //If there is an exception, add an error message and mark the row as invalid
+                        db.Transactions.Remove(transaction);
                         ErrorMessage = "This row has already been added";
                         ValidRow = false;
                     }
@@ -172,11 +186,22 @@ namespace PersonalFinanceApplication.Controllers
                     //If the row is invalid add it to the invalid rows dictionary along with the error message
                     string[] failedrow = { row[DateColumn], row[DescriptionColumn], row[AmountColumn] };
                     FailedRows.Add(failedrow, ErrorMessage );
+                    FailCount++;
+                }
+                else
+                {
+                    SuccessCount++;
                 }
             }
 
-            
-            if(FailedRows.Count > 0)
+            //Add the number of successful and failed rows to the batch
+            Batch updateBatch = db.Batches.Find(batch.BatchID);
+            updateBatch.SuccessRows = SuccessCount;
+            updateBatch.FailedRows = FailCount;
+            db.Entry(updateBatch).State = EntityState.Modified;
+            db.SaveChanges();
+
+            if (FailedRows.Count > 0)
             {
                 //If there are failed rows, redirect to ResolveFailedRows action
                 TempData["failedrows"] = FailedRows;
