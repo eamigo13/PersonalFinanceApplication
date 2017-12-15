@@ -141,7 +141,7 @@ namespace PersonalFinanceApplication.Controllers
                 catch { ErrorMessage = "Invalid Amount"; ValidRow = false; }
 
                 //Determine if the description field has a value
-                if (row[DescriptionColumn] != null) { description = row[DescriptionColumn]; }
+                if (row[DescriptionColumn] != "") { description = row[DescriptionColumn]; }
                 else { ErrorMessage = "Invalid Description"; ValidRow = false; }
 
                 //Create a transaction from the row and add it to the db if all the fields are valid
