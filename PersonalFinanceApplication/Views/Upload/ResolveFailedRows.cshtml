@@ -1,5 +1,5 @@
 ﻿@using PersonalFinanceApplication.Models
-@model Dictionary<Transaction, string[]>
+@model Dictionary<string[],string>
 @{
     ViewBag.Title = "ResolveFailedRows";
 }
@@ -11,21 +11,16 @@
         <th>Date</th>
         <th>Description</th>
         <th>Amount</th>
-        <th>All Information from File</th>
+        <th>Error Message</th>
     </tr>
     
-    @foreach (KeyValuePair<Transaction, string[]> item in Model)
+    @foreach (KeyValuePair<string[], string> item in Model)
     {
         <tr>
-            <td>@item.Key.Date.ToString("MM/dd/yyyy")</td>
-            <td>@item.Key.Description</td>
-            <td>@item.Key.Amount</td>
-            <td>
-                @foreach(var value in item.Value)
-                {
-                    <em>@value, </em>
-                }
-            </td>
+            <td>@item.Key[0]</td>
+            <td>@item.Key[1]</td>
+            <td>@item.Key[2]</td>
+            <td>@item.Value</td>
         </tr>
     }
 
