@@ -9,14 +9,12 @@ namespace PersonalFinanceApplication.Models
     [Table("Transaction")]
     public partial class Transaction
     {
-        //Constructor
-        public Transaction(DateTime Date, decimal Amount, string Description)
+        public Transaction(DateTime Date, string Description, decimal Amount)
         {
             this.Date = Date;
-            this.Amount = Amount;
             this.Description = Description;
+            this.Amount = Amount;
         }
-
         public int TransactionID { get; set; }
 
         [Required]
@@ -34,10 +32,8 @@ namespace PersonalFinanceApplication.Models
 
         public int? CategoryID { get; set; }
 
-        public virtual Account Account { get; set; }
+        public int? BatchID { get; set; }
 
-        public virtual Category Category { get; set; }
-
-        public virtual Vendor Vendor { get; set; }
+        public virtual Batch Batch { get; set; }
     }
 }

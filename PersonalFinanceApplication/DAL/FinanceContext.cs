@@ -16,6 +16,7 @@ namespace PersonalFinanceApplication.DAL
 
         public virtual DbSet<Account> Accounts { get; set; }
         public virtual DbSet<AccountType> AccountTypes { get; set; }
+        public virtual DbSet<Batch> Batches { get; set; }
         public virtual DbSet<Budget> Budgets { get; set; }
         public virtual DbSet<BudgetPeriod> BudgetPeriods { get; set; }
         public virtual DbSet<Category> Categories { get; set; }

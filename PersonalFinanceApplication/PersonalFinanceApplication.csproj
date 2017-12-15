@@ -226,6 +226,7 @@
     <Compile Include="Models\Account.cs" />
     <Compile Include="Models\AccountType.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
+    <Compile Include="Models\Batch.cs" />
     <Compile Include="Models\Budget.cs" />
     <Compile Include="Models\BudgetPeriod.cs" />
     <Compile Include="Models\Category.cs" />

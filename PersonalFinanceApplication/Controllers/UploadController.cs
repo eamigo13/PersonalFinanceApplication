@@ -150,7 +150,7 @@ namespace PersonalFinanceApplication.Controllers
                     try
                     {
                         //Try to add the transaction to the db.
-                        Transaction transaction = new Transaction(date, amount, description);
+                        Transaction transaction = new Transaction(date, description, amount);
                         db.Transactions.Add(transaction);
                         db.SaveChanges();
                     }
