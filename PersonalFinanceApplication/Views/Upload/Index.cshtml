@@ -7,7 +7,8 @@
     <br/>
     <br/>
     <div>
-        @Html.TextBox("file", "", new { type = "file" }) <br />
+        @Html.DropDownList("AccountID", new SelectList(ViewBag.Accounts, "AccountID", "AccountName"), "Choose an account") <br />
+        @Html.TextBox("file", "", new { type = "file" }) <br />    
         <input type="submit" value="Upload" />
         <p>@ViewBag.Message</p>
     </div>

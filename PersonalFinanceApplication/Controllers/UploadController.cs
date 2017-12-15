@@ -19,6 +19,7 @@ namespace PersonalFinanceApplication.Controllers
         public ActionResult Index(string message)
         {
             ViewBag.Message = message;
+            ViewBag.Accounts = db.Accounts;
             return View();
         }
 
@@ -28,8 +29,11 @@ namespace PersonalFinanceApplication.Controllers
          * value so the user can associate what columns are associated with the different
          * transaction information
          */
-        public ActionResult SelectColumns()
+        public ActionResult SelectColumns(int accountid)
         {
+            //Pass the account id to the viewbag
+            ViewBag.AccountID = accountid;
+
             //Create a new parser to parse through the csv file
             string FilePath = Path.Combine(Server.MapPath("~/Content/csv/import.csv"));
             var parser = new TextFieldParser(FilePath);
@@ -74,7 +78,7 @@ namespace PersonalFinanceApplication.Controllers
          */
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public ActionResult UploadFile(HttpPostedFileBase file)
+        public ActionResult UploadFile(HttpPostedFileBase file, [Bind( Include = "AccountID" )] int accountid)
         {
             try
             {
@@ -82,7 +86,7 @@ namespace PersonalFinanceApplication.Controllers
                 {
                     string FilePath = Path.Combine(Server.MapPath("~/Content/csv/import.csv"));
                     file.SaveAs(FilePath);
-                    return RedirectToAction("SelectColumns");
+                    return RedirectToAction("SelectColumns", new { accountid = accountid } );
                 }
                 else
                 {
@@ -103,7 +107,8 @@ namespace PersonalFinanceApplication.Controllers
          */
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public ActionResult SelectColumns([Bind(Include = "DateColumn")] int DateColumn,
+        public ActionResult SelectColumns([Bind(Include = "AccountID")] int AccountID, 
+                                          [Bind(Include = "DateColumn")] int DateColumn,
                                           [Bind(Include = "AmountColumn")] int AmountColumn,
                                           [Bind(Include = "DescriptionColumn")] int DescriptionColumn)
         {
@@ -150,7 +155,7 @@ namespace PersonalFinanceApplication.Controllers
                     try
                     {
                         //Try to add the transaction to the db.
-                        Transaction transaction = new Transaction(date, description, amount);
+                        Transaction transaction = new Transaction(AccountID, date, description, amount);
                         db.Transactions.Add(transaction);
                         db.SaveChanges();
                     }
