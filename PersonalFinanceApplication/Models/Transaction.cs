@@ -14,13 +14,14 @@ namespace PersonalFinanceApplication.Models
 
         }
 
-        public Transaction(int BatchID, int AccountID, DateTime Date, string Description, decimal Amount)
+        public Transaction(int BatchID, int AccountID, DateTime Date, string Description, decimal Amount, int StatusID)
         {
             this.BatchID = BatchID;
             this.AccountID = AccountID;
             this.Date = Date;
             this.Description = Description;
             this.Amount = Amount;
+            this.StatusID = StatusID;
         }
 
         public int TransactionID { get; set; }
@@ -42,6 +43,17 @@ namespace PersonalFinanceApplication.Models
 
         public int? BatchID { get; set; }
 
+        public int? StatusID { get; set; }
+
         public virtual Batch Batch { get; set; }
+
+        public virtual Account Account { get; set; }
+
+        public virtual Category Category { get; set; }
+
+        public virtual Vendor Vendor { get; set; }
+
+        public virtual Status Status { get; set; }
+
     }
 }

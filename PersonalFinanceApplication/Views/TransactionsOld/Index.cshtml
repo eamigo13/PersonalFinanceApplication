@@ -24,13 +24,13 @@
             @Html.DisplayNameFor(model => model.Amount)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Account.AccountName)
+            @Html.DisplayNameFor(model => model.AccountID)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Vendor.VendorName)
+            @Html.DisplayNameFor(model => model.VendorID)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Category.CategoryName)
+            @Html.DisplayNameFor(model => model.CategoryID)
         </th>
         <th></th>
     </tr>
@@ -50,13 +50,13 @@
             @Html.DisplayFor(modelItem => item.Amount)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Account.AccountName)
+            @Html.DisplayFor(modelItem => item.AccountID)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Vendor.VendorName)
+            @Html.DisplayFor(modelItem => item.VendorID)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Category.CategoryName)
+            @Html.DisplayFor(modelItem => item.CategoryID)
         </td>
         <td>
             @Html.ActionLink("Edit", "Edit", new { id=item.TransactionID }) |

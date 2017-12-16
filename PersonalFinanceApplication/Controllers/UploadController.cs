@@ -65,8 +65,9 @@ namespace PersonalFinanceApplication.Controllers
         }
 
         // GET: Upload/ResolveErrors
-        public ActionResult ResolveErrors()
+        public ActionResult ResolveErrors(int batchid)
         {
+            ViewBag.batchid = batchid;
             var failedrows = TempData["failedrows"] as List<FailedRow>;
             return View(failedrows);
         }
@@ -192,7 +193,7 @@ namespace PersonalFinanceApplication.Controllers
                 //Create a transaction from the row and add it to the db if all the fields are valid
                 if(ValidRow)
                 {
-                    Transaction transaction = new Transaction(batch.BatchID, AccountID, date, description, amount);
+                    Transaction transaction = new Transaction(batch.BatchID, AccountID, date, description, amount, 0);
 
                     try
                     {
@@ -234,12 +235,12 @@ namespace PersonalFinanceApplication.Controllers
             {
                 //If there are failed rows, redirect to ResolveErrors action
                 TempData["failedrows"] = FailedRows;
-                return RedirectToAction("ResolveErrors");
+                return RedirectToAction("ResolveErrors", new { batchid = batch.BatchID } );
             }
             else
             {
                 //If there are no failed rows, redirect to Confirmed action
-                return RedirectToAction("Index");
+                return RedirectToAction("FindVendor", "Transaction", new { batchid = batch.BatchID } );
             }
 
             //Delete the import.csv file
@@ -248,7 +249,7 @@ namespace PersonalFinanceApplication.Controllers
         }
 
         [HttpPost]
-        public ActionResult ResolveErrors(int placeholder)
+        public ActionResult ResolveErrors()
         {
             return RedirectToAction("Index");
         }

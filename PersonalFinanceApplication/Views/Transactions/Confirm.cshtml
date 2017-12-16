@@ -1,0 +1,54 @@
+﻿@model IEnumerable<PersonalFinanceApplication.Models.Transaction>
+@{
+    ViewBag.Title = "Confirm";
+}
+
+<h2>Confirm</h2>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-1">
+        <b>Date</b>
+    </div>
+    <div class="col-md-3">
+        <b>Description</b>
+    </div>
+    <div class="col-md-1">
+        <b>Amount</b>
+    </div>
+    <div class="col-md-2">
+        <b>Vendor</b>
+    </div>
+    <div class="col-md-2">
+        <b>Category</b>
+    </div>
+</div>
+<hr />
+
+
+@foreach(var transaction in Model)
+{
+    <div class="row">
+        <div class="col-md-1">
+            @transaction.Date.ToString("MM/dd/yyyy")
+        </div>
+        <div class="col-md-3">
+            @Html.DisplayFor(modelItem => transaction.Description)
+        </div>
+        <div class="col-md-1">
+            @Html.DisplayFor(modelItem => transaction.Amount)
+        </div>
+        <div class="col-md-2">
+            @Html.DropDownList("VendorID", new SelectList(ViewBag.Vendors, "VendorID", "VendorName", transaction.Vendor.VendorName))
+        </div>
+        <div class="col-md-2">
+            @Html.DropDownList("CategoryID", new SelectList(ViewBag.Categories, "CategoryID", "CategoryName", transaction.Category.CategoryName))
+        </div>
+    </div>
+
+    <hr/>
+}
+
+
+

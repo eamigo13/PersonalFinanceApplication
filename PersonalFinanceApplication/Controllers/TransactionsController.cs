@@ -22,6 +22,48 @@ namespace PersonalFinanceApplication.Controllers
             return View(transactions.ToList());
         }
 
+
+        // GET: Transactions/Confirm
+        public ActionResult FindVendor(int batchid)
+        {
+            var transactions = db.Transactions.Where(t => t.BatchID == batchid);
+
+            //Right now I'm setting each vendor and each category to unknown
+            //This will be updated in the future
+            foreach(var transaction in transactions)
+            {
+                transaction.VendorID = 0;
+                transaction.CategoryID = 0;  
+            }
+
+            db.SaveChanges();
+
+            return RedirectToAction("Confirm", new { batchid = batchid });
+        }
+
+        // GET: Transactions/Confirm
+        public ActionResult Confirm(int? batchid)
+        {
+            var transactions = new List<Transaction>();
+
+            if (batchid == null)
+            {
+                //If no parameter is passed in, return all unconfirmed transactions
+                transactions = db.Transactions.Where(t => t.StatusID == 0).ToList(); 
+            }
+            else
+            {
+                //if a batch id is passed in, only return transactions associated with that batch
+                transactions = db.Transactions.Where(t => t.BatchID == batchid).ToList();
+            }
+
+            //Pass a list of categories and vendors to the viewbag to be used in a select list
+            ViewBag.Vendors = db.Vendors.ToList();
+            ViewBag.Categories = db.Categories.ToList();
+
+            return View(transactions);
+        }
+
         // GET: Transactions/Details/5
         public ActionResult Details(int? id)
         {
