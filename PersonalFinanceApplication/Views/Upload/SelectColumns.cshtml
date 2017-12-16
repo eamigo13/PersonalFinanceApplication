@@ -1,15 +1,41 @@
-﻿@model IEnumerable<PersonalFinanceApplication.Models.Column>
-@{
+﻿@{
     ViewBag.Title = "Select Columns";
 }
+
+<h2>Select Appropriate Information</h2>
+<b>These drop down menus contain values from the first row of the csv file.  Please select the information that corresponds with the date, description and amount.</b>
+<hr />
 
 @using (Html.BeginForm("SelectColumns", "Upload", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
 
     <input type="hidden" id="AccountID" name="AccountID" value="@ViewBag.AccountID" />
-    @Html.DropDownList("DateColumn", new SelectList(Model, "ColumnNumber", "ExampleValue"), "Select the date")
-    @Html.DropDownList("AmountColumn", new SelectList(Model, "ColumnNumber", "ExampleValue"), "Select the amount")
-    @Html.DropDownList("DescriptionColumn", new SelectList(Model, "ColumnNumber", "ExampleValue"), "Select the description")
-    <input type="submit" value="Submit" />
 
+    <div class="form-group">
+        <p>Date</p>
+        <div>
+            @Html.DropDownList("DateColumn", new SelectList(ViewBag.datecolumns, "ColumnNumber", "ExampleValue"))
+        </div>
+    </div>
+
+    <div class="form-group">
+        <p>Description</p>
+        <div>
+            @Html.DropDownList("DescriptionColumn", new SelectList(ViewBag.textcolumns, "ColumnNumber", "ExampleValue"), "Select the description")
+        </div>
+    </div>
+
+    <div class="form-group">
+        <p>Amount</p>
+        <div>
+            @Html.DropDownList("AmountColumn", new SelectList(ViewBag.amountcolumns, "ColumnNumber", "ExampleValue"))
+        </div>
+    </div>
+
+
+    <div class="form-group">
+        <div>
+            <input type="submit" value="Submit" class="btn btn-default" />
+        </div>
+    </div>
 }

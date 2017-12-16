@@ -41,27 +41,56 @@ namespace PersonalFinanceApplication.Controllers
             parser.TextFieldType = FieldType.Delimited;
             parser.SetDelimiters(new string[] { "," });
 
-            //Create a list of columns to be associated with each 'column' in the csv file
-            var columns = new List<Column>();
-
+            //Create a list of date columns, amount columns, and text columns
+            ViewBag.datecolumns = new List<Column>();
+            ViewBag.amountcolumns = new List<Column>();
+            ViewBag.textcolumns = new List<Column>();
+            
             //Parse the first row of the file to get an example of each piece of data.
             string[] firstrow = parser.ReadFields();
 
-            //Check each record in the first row.  If it contains a value, add it to the list of columns
+            /* Check each record in the first row.  
+             * If it is empty, throw it out
+             * If it contains a value that can be parsed to a date, add it to the date columns
+             * If it contains a value that can be parsed to an integer, add it to the amount column
+             * If it just contains text, add it to the text column
+             */ 
             for (int i = 0; i < firstrow.Length; i++)
             {
-                if (firstrow[i] != "")
+                //Create the column (column number, column value)
+                Column column = new Column(i, firstrow[i]);
+
+                try
                 {
-                    Column column = new Column(i, firstrow[i]);
-                    columns.Add(column);
+                    //try converting to a date
+                    Convert.ToDateTime(firstrow[i]);
+                    ViewBag.datecolumns.Add(column);
                 }
+                catch
+                {
+                    try
+                    {
+                        //try converting to a decimal
+                        Decimal.Parse(firstrow[i]);
+                        ViewBag.amountcolumns.Add(column);
+                    }
+                    catch
+                    {
+                        if (firstrow[i] != "")
+                        {
+                            //If not empty, add to textcolumns
+                            ViewBag.textcolumns.Add(column);
+                        }
+                    }
+                }
+                
             }
 
             /* Pass the list of columns to the view where the user can select
              * which columns are associated with the transaction amount, date
              * and description.
              */
-            return View(columns);
+            return View();
         }
 
         // GET: Upload/ResolveErrors
