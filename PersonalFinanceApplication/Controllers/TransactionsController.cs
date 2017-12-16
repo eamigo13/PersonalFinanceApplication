@@ -23,19 +23,16 @@ namespace PersonalFinanceApplication.Controllers
         }
 
 
-        // GET: Transactions/Confirm
+        // GET: Transactions/FindVendor
         public ActionResult FindVendor(int batchid)
         {
             //retrieve all transactions associated with the batch
             var transactions = db.Transactions.Where(t => t.BatchID == batchid);
 
             //retrieve a list of vendor description strings and store them in a dictionary
-            var vndrstrings = db.VendorAbbrevs.ToList();
+            var vndrstrings = db.VendorAbbrevs.ToList(); 
 
-            
-
-            //Right now I'm setting each vendor and each category to unknown
-            //This will be updated in the future
+            //Determine if the description contains a vendor abbreviation.  If it does, set the transaction to corresponding VendorID
             foreach(var transaction in transactions) 
             {
                 //boolean used to determine if vendor was found in description
@@ -56,12 +53,49 @@ namespace PersonalFinanceApplication.Controllers
                 {
                     transaction.VendorID = 0;
                 }
-
-                //Curently setting all categories to unknown.  Will be changed.
-                transaction.CategoryID = 0;  
             }
 
+            //Save changes to the db.
             db.SaveChanges();
+
+            return RedirectToAction("FindCategory", new { batchid = batchid });
+        }
+
+        // GET: Transactions/FindVendor
+        public ActionResult FindCategory(int batchid)
+        {
+            //retrieve all transactions associated with the batch
+            var transactions = db.Transactions.Where(t => t.BatchID == batchid).ToList();
+
+            foreach (var transaction in transactions)
+            {
+                //retreive the CategoryIDs associated with the vendorID who have the largest transaction count
+                string query =  "select CategoryID\n" +
+                                "from[VendorCategory]\n" +
+                                "where VendorID = " + transaction.VendorID + "\n" +
+                                "and TransactionCount = (Select max(TransactionCount)\n" +
+                                                        "from VendorCategory\n" +
+                                                        "where VendorID = " + transaction.VendorID + ")";
+                List<int> MaxCategories = db.Database.SqlQuery<int>(query).ToList();
+
+                try
+                {
+                    //retrieve the first category id from the list of categories with the most transaction counts (arbitrary tiebreaker)
+                    int maxCategoryID = MaxCategories.First();
+
+                    //Set the category id of the transaction 
+                    transaction.CategoryID = maxCategoryID;
+                }
+                catch
+                { 
+                    //Category default is unknown
+                    transaction.CategoryID = 0;
+                }
+
+                //Save changes to the db.
+                db.Entry(transaction).State = EntityState.Modified;
+                db.SaveChanges();
+            }
 
             return RedirectToAction("Confirm", new { batchid = batchid });
         }

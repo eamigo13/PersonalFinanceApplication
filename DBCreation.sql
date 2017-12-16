@@ -140,6 +140,7 @@ CREATE TABLE [BudgetCategory] (
 CREATE TABLE [VendorCategory] (
   [VendorID] int,
   [CategoryID] int,
+  TransactionCount int,
   CONSTRAINT PK_VendorCategory PRIMARY KEY(VendorID, CategoryID),
   CONSTRAINT FK_VendorCategory_Vendor FOREIGN KEY (VendorID) REFERENCES Vendor(VendorID),
   CONSTRAINT FK_VendorCategory_Category FOREIGN KEY (CategoryID) REFERENCES Category(CategoryID)
@@ -193,7 +194,20 @@ INSERT INTO Vendor(VendorName) VALUES
 ('Walmart'),
 ('Target'),
 ('Amazon'),
-('REI'),
+('Shell'),
 ('Winco');
 
+INSERT INTO VendorCategory VALUES
+(5, 1, 10),
+(3, 5, 4),
+(1, 1, 4),
+(1, 5, 3),
+(4, 3, 2);
+
+INSERT INTO [VendorAbbrev] VALUES
+(1, 'WALMART'),
+(1, 'WM SUPERCENTER'),
+(1, 'WAL-MART'),
+(2, 'TARGET'),
+(3, 'AMAZON');
 
