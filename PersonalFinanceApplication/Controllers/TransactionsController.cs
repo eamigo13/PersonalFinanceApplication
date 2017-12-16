@@ -26,13 +26,38 @@ namespace PersonalFinanceApplication.Controllers
         // GET: Transactions/Confirm
         public ActionResult FindVendor(int batchid)
         {
+            //retrieve all transactions associated with the batch
             var transactions = db.Transactions.Where(t => t.BatchID == batchid);
+
+            //retrieve a list of vendor description strings and store them in a dictionary
+            var vndrstrings = db.VendorAbbrevs.ToList();
+
+            
 
             //Right now I'm setting each vendor and each category to unknown
             //This will be updated in the future
-            foreach(var transaction in transactions)
+            foreach(var transaction in transactions) 
             {
-                transaction.VendorID = 0;
+                //boolean used to determine if vendor was found in description
+                bool VendorFound = false;
+
+                foreach (var vndrstring in vndrstrings)
+                {
+                    if(transaction.Description.Contains(vndrstring.Abbrev))
+                    {
+                        transaction.VendorID = vndrstring.VendorID;
+                        VendorFound = true;
+                        break;
+                    }
+                }
+
+                //if no vendor was found, assign vendor to 'Unknown'
+                if (!VendorFound)
+                {
+                    transaction.VendorID = 0;
+                }
+
+                //Curently setting all categories to unknown.  Will be changed.
                 transaction.CategoryID = 0;  
             }
 

@@ -59,7 +59,7 @@ CREATE TABLE [AccountType] (
 CREATE TABLE [Account] (
   [AccountID] int identity(0,1),
   [AccountName] nvarchar(50) NOT NULL,
-  [AccountTypeID] int DEFAULT 0,
+  [AccountTypeID] int,
   CONSTRAINT PK_Account PRIMARY KEY ([AccountID]),
   CONSTRAINT FK_Account_AccountType FOREIGN KEY (AccountTypeID) REFERENCES AccountType(AccountTypeID)
 )
@@ -73,7 +73,7 @@ CREATE TABLE [CategoryType] (
 CREATE TABLE [Category] (
   [CategoryID] int identity(0,1),
   [CategoryName] nvarchar(50) NOT NULL,
-  [CategoryTypeID] int DEFAULT 0 ,
+  [CategoryTypeID] int,
   CONSTRAINT PK_Category PRIMARY KEY ([CategoryID]),
   CONSTRAINT FK_Category_CategoryType FOREIGN KEY (CategoryTypeID) REFERENCES CategoryType(CategoryTypeID)
 );
@@ -97,11 +97,11 @@ CREATE TABLE [Transaction] (
   [Description] nvarchar(100) NOT NULL,
   [Date] date NOT NULL,
   [Amount] decimal(18,2) NOT NULL,
-  [AccountID] int DEFAULT 0,
-  [VendorID] int DEFAULT 0,
-  [CategoryID] int DEFAULT 0,
+  [AccountID] int,
+  [VendorID] int,
+  [CategoryID] int,
   [BatchID] int,
-  [StatusID] int DEFAULT 0,
+  [StatusID] int,
   CONSTRAINT PK_Transaction PRIMARY KEY ([TransactionID]),
   CONSTRAINT FK_Transaction_Account FOREIGN KEY (AccountID) REFERENCES Account(AccountID),
   CONSTRAINT FK_Transaction_Vendor FOREIGN KEY (VendorID) REFERENCES Vendor(VendorID),
@@ -194,6 +194,6 @@ INSERT INTO Vendor(VendorName) VALUES
 ('Target'),
 ('Amazon'),
 ('REI'),
-('Google');
+('Winco');
 
 

@@ -40,10 +40,10 @@
             @Html.DisplayFor(modelItem => transaction.Amount)
         </div>
         <div class="col-md-2">
-            @Html.DropDownList("VendorID", new SelectList(ViewBag.Vendors, "VendorID", "VendorName", transaction.Vendor.VendorName))
+            @Html.DropDownListFor(modelItem => transaction.VendorID, new SelectList(ViewBag.Vendors, "VendorID", "VendorName", transaction.VendorID))
         </div>
         <div class="col-md-2">
-            @Html.DropDownList("CategoryID", new SelectList(ViewBag.Categories, "CategoryID", "CategoryName", transaction.Category.CategoryName))
+            @Html.DropDownList("CategoryID", new SelectList(ViewBag.Categories, "CategoryID", "CategoryName", transaction.CategoryID))
         </div>
     </div>
 
