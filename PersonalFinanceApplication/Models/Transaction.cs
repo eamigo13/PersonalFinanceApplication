@@ -9,6 +9,11 @@ namespace PersonalFinanceApplication.Models
     [Table("Transaction")]
     public partial class Transaction
     {
+        public Transaction()
+        {
+
+        }
+
         public Transaction(int BatchID, int AccountID, DateTime Date, string Description, decimal Amount)
         {
             this.BatchID = BatchID;
@@ -17,6 +22,7 @@ namespace PersonalFinanceApplication.Models
             this.Description = Description;
             this.Amount = Amount;
         }
+
         public int TransactionID { get; set; }
 
         [Required]

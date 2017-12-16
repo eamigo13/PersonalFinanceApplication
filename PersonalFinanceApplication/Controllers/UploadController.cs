@@ -64,10 +64,10 @@ namespace PersonalFinanceApplication.Controllers
             return View(columns);
         }
 
-        // GET: Upload/ResolveFailedRows
-        public ActionResult ResolveFailedRows()
+        // GET: Upload/ResolveErrors
+        public ActionResult ResolveErrors()
         {
-            var failedrows = TempData["failedrows"] as Dictionary<string[], string>;
+            var failedrows = TempData["failedrows"] as List<FailedRow>;
             return View(failedrows);
         }
 
@@ -129,8 +129,8 @@ namespace PersonalFinanceApplication.Controllers
             parser.TextFieldType = FieldType.Delimited;
             parser.SetDelimiters(new string[] { "," });
 
-            //This dictionary will contain all the transactions that failed to save to the db and their associated row information
-            Dictionary<string[], string> FailedRows = new Dictionary<string[], string>();
+            //This array will contain all the transactions that failed to save to the db and their associated row information
+            List<FailedRow> FailedRows = new List<FailedRow>();
 
             //parse through each row, grab the information from appropiate columns, create a new transaction, and add it to the db
             //if the row is invalid, add it to the failed rows list
@@ -144,21 +144,50 @@ namespace PersonalFinanceApplication.Controllers
                 decimal amount = new decimal();
                 string description = "";
 
-                //Error Message variables
-                string ErrorMessage = "";
+                //Error variables.  
                 bool ValidRow = true;
+                FailedRow FailedRow = new FailedRow();
 
                 //Determine if the date field can be converted to a date
-                try { date = Convert.ToDateTime(row[DateColumn]); }
-                catch { ErrorMessage = "Invalid Date"; ValidRow = false; }
+                try
+                {
+                    date = Convert.ToDateTime(row[DateColumn]);
+                    FailedRow.Date = date;
+                }
+                catch
+                {
+                    FailedRow.invalidDate = row[DateColumn];
+                    FailedRow.ErrorID = 1;
+                    FailedRow.ErrorMessage += "Invalid Date.  Please enter a valid date.\n";
+                    ValidRow = false;
+                }
 
                 //Determine if the amount field can be converted to a decimal
-                try { amount = Decimal.Parse(row[AmountColumn]); }
-                catch { ErrorMessage = "Invalid Amount"; ValidRow = false; }
+                try
+                {
+                    amount = Decimal.Parse(row[AmountColumn]);
+                    FailedRow.Amount = amount;
+                }
+                catch
+                {
+                    FailedRow.invalidDate = row[AmountColumn];
+                    FailedRow.ErrorID = 2;
+                    FailedRow.ErrorMessage += "Invalid Amount.  Please enter a valid amount.\n";
+                    ValidRow = false;
+                }
 
                 //Determine if the description field has a value
-                if (row[DescriptionColumn] != "") { description = row[DescriptionColumn]; }
-                else { ErrorMessage = "Invalid Description"; ValidRow = false; }
+                if (row[DescriptionColumn] != "")
+                {
+                    description = row[DescriptionColumn];
+                    FailedRow.Description = description;
+                }
+                else
+                {
+                    FailedRow.ErrorID = 3;
+                    FailedRow.ErrorMessage += "No Description.  Please enter a description.\n";
+                    ValidRow = false;
+                }
 
                 //Create a transaction from the row and add it to the db if all the fields are valid
                 if(ValidRow)
@@ -168,7 +197,6 @@ namespace PersonalFinanceApplication.Controllers
                     try
                     {
                         //Try to add the transaction to the db.
-                        
                         db.Transactions.Add(transaction);
                         db.SaveChanges();
                     }
@@ -176,7 +204,8 @@ namespace PersonalFinanceApplication.Controllers
                     {
                         //If there is an exception, add an error message and mark the row as invalid
                         db.Transactions.Remove(transaction);
-                        ErrorMessage = "This row has already been added";
+                        FailedRow.ErrorID = 4;
+                        FailedRow.ErrorMessage += "Duplicate transaction cannot be uploaded.\n";
                         ValidRow = false;
                     }
                 }
@@ -185,7 +214,7 @@ namespace PersonalFinanceApplication.Controllers
                 {
                     //If the row is invalid add it to the invalid rows dictionary along with the error message
                     string[] failedrow = { row[DateColumn], row[DescriptionColumn], row[AmountColumn] };
-                    FailedRows.Add(failedrow, ErrorMessage );
+                    FailedRows.Add(FailedRow);
                     FailCount++;
                 }
                 else
@@ -203,9 +232,9 @@ namespace PersonalFinanceApplication.Controllers
 
             if (FailedRows.Count > 0)
             {
-                //If there are failed rows, redirect to ResolveFailedRows action
+                //If there are failed rows, redirect to ResolveErrors action
                 TempData["failedrows"] = FailedRows;
-                return RedirectToAction("ResolveFailedRows");
+                return RedirectToAction("ResolveErrors");
             }
             else
             {
@@ -216,8 +245,12 @@ namespace PersonalFinanceApplication.Controllers
             //Delete the import.csv file
             //FileInfo file = new FileInfo(FilePath);
             //file.Delete();
+        }
 
-
+        [HttpPost]
+        public ActionResult ResolveErrors(int placeholder)
+        {
+            return RedirectToAction("Index");
         }
     }
 }

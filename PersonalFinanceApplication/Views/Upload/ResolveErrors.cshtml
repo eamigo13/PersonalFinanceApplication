@@ -1,0 +1,83 @@
+﻿@model IEnumerable<PersonalFinanceApplication.Models.FailedRow>
+@{
+    ViewBag.Title = "ResolveFailedRows";
+}
+
+<h2>Resolve Errors</h2>
+<br />
+<hr />
+    
+    @foreach (var FailedRow in Model)
+    {
+        <div class="row">
+
+            <div class="col-md-3">
+                <p><b>@FailedRow.ErrorMessage</b></p>
+            </div>
+
+
+                @switch (FailedRow.ErrorID)
+                {
+                    case 1:
+                        <div class="col-md-3">
+                            <p class="control-label">Please enter a valid date.</p>
+                            <input type="date" id="Date" name="Date" />
+                        </div>
+                        <div class="col-md-3">
+                            <p><b>Date:</b> @FailedRow.invalidDate</p>
+                            <p><b>Description:</b>  @FailedRow.Description</p>
+                            <p><b>Amount:</b>  @FailedRow.Amount</p>
+                        </div>
+                        break;
+
+                    case 2:
+                        <div class="col-md-3">
+                            <p>Please enter a valid amount.</p>
+                            <input class="control-label" type="number" step="1" id="Amount" name="Amount" />
+                        </div>
+                        <div class="col-md-3">
+                            <p><b>Date:</b> @FailedRow.Date</p>
+                            <p><b>Description:</b>  @FailedRow.Description</p>
+                            <p><b>Amount:</b>  @FailedRow.invalidAmount</p>
+                        </div>
+                        break;
+
+                    case 3:
+                        <div class="col-md-3">
+                            <p>Please enter a description.</p>
+                            <input class="control-label" type="text" id="Description" name="Description" />
+                        </div>
+                        <div class="col-md-3">
+                            <p><b>Date:</b> @FailedRow.Date</p>
+                            <p><b>Amount:</b>  @FailedRow.Amount</p>
+                        </div>
+                        break;
+
+                    case 4:
+                        <div class="col-md-2">
+                            <p>Date</p>
+                            <input class="control-label" type="date" id="Date" name="Date" value="@FailedRow.Date" />
+                        </div>
+                        <div class="col-md-2">
+                            <p>Description</p>
+                            <input class="control-label" type="text" id="Description" name="Description" value="@FailedRow.Description" />
+                        </div>
+                        <div class="col-md-2">
+                            <p>Amount</p>
+                            <input class="control-label" type="number" id="Amount" name="Amount" value="@FailedRow.Amount" />
+                        </div>
+                        break;
+                }
+            
+            <div class="col-md-1"></div>
+            <div class="col-md-1">
+                <a class="btn btn-danger" href="@Url.Action("Index", "Upload")">Ignore</a>
+            </div>
+            <div class="col-md-1">
+                <a class="btn btn-success" href="@Url.Action("Index", "Upload")">Submit</a>
+            </div>
+        </div>
+        
+        <hr />
+    }
+
