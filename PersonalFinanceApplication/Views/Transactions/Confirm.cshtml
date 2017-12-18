@@ -3,8 +3,38 @@
     ViewBag.Title = "Confirm";
 }
 
-<h2>Confirm</h2>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
+<script>
+  
+    $(document).ready(function () {
+
+        var number = 4;
+
+        $('#ConfirmAll').click(function () {
+            $.ajax({
+                type: 'POST', //HTTP POST Method
+                url: '/Transactions/Confirm', // Controller/View
+                data: '{id: ' + JSON.stringify(number) + '}',
+                dataType: "json",
+                contentType: 'application/json; charset=utf-8',
+                success: function () {
+                    alert("Success");
+                },
+                failure: function (response) {
+                    alert("Fail");
+                },
+                error: function (response) {
+                    alert("Fail");
+                }
+            });
+        })
+    })
+</script>
+
+<h2>Confirm</h2>
+<button class="btn btn-success pull-right" id="ConfirmAll">Confirm All</button>
+<br />
 <hr />
 
 <div class="row">
@@ -27,27 +57,76 @@
 <hr />
 
 
-@foreach(var transaction in Model)
-{
-    <div class="row">
-        <div class="col-md-1">
-            @transaction.Date.ToString("MM/dd/yyyy")
-        </div>
-        <div class="col-md-3">
-            @Html.DisplayFor(modelItem => transaction.Description)
-        </div>
-        <div class="col-md-1">
-            @Html.DisplayFor(modelItem => transaction.Amount)
-        </div>
-        <div class="col-md-2">
-            @Html.DropDownListFor(modelItem => transaction.VendorID, new SelectList(ViewBag.Vendors, "VendorID", "VendorName", transaction.VendorID))
-        </div>
-        <div class="col-md-2">
-            @Html.DropDownList("CategoryID", new SelectList(ViewBag.Categories, "CategoryID", "CategoryName", transaction.CategoryID))
-        </div>
-    </div>
 
-    <hr/>
+@foreach (var transaction in Model)
+{
+    @*<form id="confirmTransaction" action="~/Controllers/Transactions/Confirm" method="post">*@
+    <script>
+
+    $(document).ready(function () {
+        $("#@transaction.TransactionID").click(function () {
+            $.ajax(
+                {
+                    type: "POST", //HTTP POST Method
+                    url: form.attr("action"), // Controller/View
+                    data: { //Passing data
+                        id: 3
+                        @*TransactionID: @transaction.TransactionID, //Reading text box values using Jquery
+                        VendorID: $("#@transaction.TransactionID@transaction.Vendor.VendorName").val(),
+                        CategoryID: $("#@transaction.TransactionID@transaction.Category.CategoryName").val()*@
+                    }
+
+                });
+
+        });
+    });
+
+    </script>
+
+        <div class="row">
+            <div class="col-md-1">
+                @transaction.Date.ToString("MM/dd/yyyy")
+            </div>
+            <div class="col-md-3">
+                @Html.DisplayFor(modelItem => transaction.Description)
+            </div>
+            <div class="col-md-1">
+                @Html.DisplayFor(modelItem => transaction.Amount)
+            </div>
+            <div class="col-md-2">
+                @Html.DropDownList(transaction.TransactionID + transaction.Vendor.VendorName, new SelectList(ViewBag.Vendors, "VendorID", "VendorName", transaction.VendorID))
+            </div>
+            <div class="col-md-2">
+                @Html.DropDownList(transaction.TransactionID + transaction.Category.CategoryName, new SelectList(ViewBag.Categories, "CategoryID", "CategoryName", transaction.CategoryID))
+            </div>
+            <div class="col-md-1">
+                <input type="hidden" id="TransactionID" name="TransactionID" value="@transaction.TransactionID" />
+                <input type="button" value="Confirm" id="@transaction.TransactionID" class="btn btn-success" />
+                @*<a class="btn btn-success" href="@Url.Action("Confirm", "Transactions")">Confirm</a>*@
+            </div>
+            <div class="col-md-1">
+                <a class="btn btn-default" href="@Url.Action("Details", "Transactions", new { id = transaction.TransactionID })">View Details</a>
+            </div>
+        </div>
+
+        <hr/>
+    @*</form>*@
+
+
+    @*@section Scripts
+    {
+        <script type="text/javascript">
+        $('#Confirm').click(function () {
+
+            var form = $("#confirmTransaction");
+            var url = form.attr("action");
+            var formData = form.serialize();
+            $.post(url, formData, function (data) {
+                $("#msg").html(data);
+            });
+        })
+        </script>
+    }*@
 }
 
 
