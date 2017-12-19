@@ -5,32 +5,6 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
-<script>
-  
-    $(document).ready(function () {
-
-        var number = 4;
-
-        $('#ConfirmAll').click(function () {
-            $.ajax({
-                type: 'POST', //HTTP POST Method
-                url: '/Transactions/Confirm', // Controller/View
-                data: '{id: ' + JSON.stringify(number) + '}',
-                dataType: "json",
-                contentType: 'application/json; charset=utf-8',
-                success: function () {
-                    alert("Success");
-                },
-                failure: function (response) {
-                    alert("Fail");
-                },
-                error: function (response) {
-                    alert("Fail");
-                }
-            });
-        })
-    })
-</script>
 
 <h2>Confirm</h2>
 <button class="btn btn-success pull-right" id="ConfirmAll">Confirm All</button>
@@ -88,7 +62,9 @@
                     dataType: "json",
                     contentType: 'application/json; charset=utf-8',
                     success: function () {
-                        alert("Success");
+                        //alert("Success");
+                        $('#Row-@transaction.TransactionID').hide();
+                        $('#hr-@transaction.TransactionID').hide();      
                     },
                     failure: function (response) {
                         alert("Fail");
@@ -101,7 +77,7 @@
         })
     </script>
 
-    <div class="row">
+    <div class="row" id="Row-@transaction.TransactionID">
         <div class="col-md-1">
             @transaction.Date.ToString("MM/dd/yyyy")
         </div>
@@ -127,7 +103,7 @@
         </div>
     </div>
 
-    <hr/>
+    <hr id="hr-@transaction.TransactionID"/>
 }
 
 

@@ -233,11 +233,13 @@ namespace PersonalFinanceApplication.Controllers
 
         /* POST: Transactions/Confirm
          */
-         [HttpPost]
-         public JsonResult Confirm(int TransactionID, int CategoryID, int VendorID)
+        [HttpPost]
+        public JsonResult Confirm(int TransactionID, int CategoryID, int VendorID)
         {
-            var transaction = db.Transactions.Find(1);
-            transaction.VendorID = TransactionID;
+            var transaction = db.Transactions.Find(TransactionID);
+            transaction.VendorID = VendorID;
+            transaction.CategoryID = CategoryID;
+            transaction.StatusID = 1;
 
             if (ModelState.IsValid)
             {
