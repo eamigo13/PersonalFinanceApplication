@@ -5,6 +5,48 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
+<script>
+
+    //Post the TransactionID, CategoryID, and VendorID to the Transactions/Confirm (post)
+    function confirm(id, cval, vval) {
+        $.ajax({
+            type: 'POST', //HTTP POST Method
+            url: '/Transactions/Confirm', // Controller/View
+            data: '{TransactionID: ' + JSON.stringify(id) +
+            ', CategoryID: ' + JSON.stringify(cval) +
+            ', VendorID: ' + JSON.stringify(vval) + '}',
+            dataType: "json",
+            contentType: 'application/json; charset=utf-8',
+            success: function () {
+                //alert("Success");
+                $('#' + id).hide();
+                $('#hr-' + id).hide();
+            },
+            failure: function (response) {
+                alert("Fail");
+            },
+            error: function (response) {
+                alert("Fail");
+            }
+        });
+    }
+
+    $(document).ready(function () {
+
+        $("#ConfirmAll").click(function () {
+
+            for (i = 0; i < @Model.Count(); i++)
+            {
+                var categoryvalue = $("#Category-" + i).val();
+                var vendorvalue = $("#Vendor-" + i).val();
+
+                confirm(i, categoryvalue, vendorvalue);
+            }
+        });
+
+    })
+
+</script>
 
 <h2>Confirm</h2>
 <button class="btn btn-success pull-right" id="ConfirmAll">Confirm All</button>
@@ -51,33 +93,16 @@
                 vendorvalue = $("#Vendor-@transaction.TransactionID").val();
             });
 
-            //If the confirm button is clicked, post the TransactionID, CategoryID, and VendorID to the Transactions/Confirm (post)
-            $('#@transaction.TransactionID').click(function () {
-                $.ajax({
-                    type: 'POST', //HTTP POST Method
-                    url: '/Transactions/Confirm', // Controller/View
-                    data: '{TransactionID: ' + JSON.stringify(@transaction.TransactionID) +
-                            ', CategoryID: ' + JSON.stringify(categoryvalue) +
-                            ', VendorID: ' + JSON.stringify(vendorvalue) + '}',
-                    dataType: "json",
-                    contentType: 'application/json; charset=utf-8',
-                    success: function () {
-                        //alert("Success");
-                        $('#Row-@transaction.TransactionID').hide();
-                        $('#hr-@transaction.TransactionID').hide();      
-                    },
-                    failure: function (response) {
-                        alert("Fail");
-                    },
-                    error: function (response) {
-                        alert("Fail");
-                    }
-                });
-            })
+            //Pass the transactionID, CategoryID, and VendorID to the confirm function to be posted to the server
+            $("#Confirm-@transaction.TransactionID").click(function () {
+                confirm(@transaction.TransactionID, categoryvalue, vendorvalue)
+            });
+
         })
+
     </script>
 
-    <div class="row" id="Row-@transaction.TransactionID">
+    <div class="row" id="@transaction.TransactionID">
         <div class="col-md-1">
             @transaction.Date.ToString("MM/dd/yyyy")
         </div>
@@ -94,9 +119,7 @@
             @Html.DropDownList(transaction.TransactionID + "Category", new SelectList(ViewBag.Categories, "CategoryID", "CategoryName", transaction.Category.CategoryID), new { @id = "Category-" + transaction.TransactionID })
         </div>
         <div class="col-md-1">
-            <input type="hidden" id="TransactionID" name="TransactionID" value="@transaction.TransactionID" />
-            <input type="button" value="Confirm" id="@transaction.TransactionID" class="btn btn-success" />
-            @*<a class="btn btn-success" href="@Url.Action("Confirm", "Transactions")">Confirm</a>*@
+            <input type="button" value="Confirm" id="Confirm-@transaction.TransactionID" class="btn btn-success" />
         </div>
         <div class="col-md-1">
             <a class="btn btn-default" href="@Url.Action("Details", "Transactions", new { id = transaction.TransactionID })">View Details</a>
