@@ -56,31 +56,66 @@
 </div>
 <hr />
 
+<script>
+    $(document).ready(function () {
 
+        var vendorListLength = $('#TestDrop').children('option').length;
+        $(function () {
+            $("#TestDrop").change(function () {
+                alert($("#TestDrop").val());
+            });
+        });
+
+    })
+</script>
+<p id="test">Test</p>
+@Html.DropDownList("TestDrop", new SelectList(ViewBag.Categories, "CategoryID", "CategoryName"))
 
 @foreach (var transaction in Model)
 {
-    @*<form id="confirmTransaction" action="~/Controllers/Transactions/Confirm" method="post">*@
     <script>
 
-    $(document).ready(function () {
-        $("#@transaction.TransactionID").click(function () {
-            $.ajax(
-                {
-                    type: "POST", //HTTP POST Method
-                    url: form.attr("action"), // Controller/View
-                    data: { //Passing data
-                        id: 3
-                        @*TransactionID: @transaction.TransactionID, //Reading text box values using Jquery
-                        VendorID: $("#@transaction.TransactionID@transaction.Vendor.VendorName").val(),
-                        CategoryID: $("#@transaction.TransactionID@transaction.Category.CategoryName").val()*@
-                    }
+        $(document).ready(function () {
 
+            var number = 4;
+            var categoryvalue = 4;
+            var vendorvalue = 4;
+
+            $(function () {
+                $("#Category-@transaction.TransactionID@transaction.Category.CategoryName").change(function () {
+                    alert($("#Category-@transaction.TransactionID@transaction.Category.CategoryName").val());
+                    categoryvalue = $("#Category-@transaction.TransactionID@transaction.Category.CategoryName").val();
                 });
+            });
 
-        });
-    });
+            $(function () {
+                $("#Vendor-@transaction.TransactionID@transaction.Vendor.VendorName").change(function () {
+                    alert($("#Vendor-@transaction.TransactionID@transaction.Vendor.VendorName").val());
+                    vendorvalue = $("#Vendor-@transaction.TransactionID@transaction.Vendor.VendorName").val();
+                });
+            });
 
+            $('#@transaction.TransactionID').click(function () {
+                $.ajax({
+                    type: 'POST', //HTTP POST Method
+                    url: '/Transactions/Confirm', // Controller/View
+                    data: '{TransactionID: ' + JSON.stringify(@transaction.TransactionID) +
+                            ', CategoryID: ' + JSON.stringify(categoryvalue) +
+                            ', VendorID: ' + JSON.stringify(vendorvalue) + '}',
+                    dataType: "json",
+                    contentType: 'application/json; charset=utf-8',
+                    success: function () {
+                        alert("Success");
+                    },
+                    failure: function (response) {
+                        alert("Fail");
+                    },
+                    error: function (response) {
+                        alert("Fail");
+                    }
+                });
+            })
+        })
     </script>
 
         <div class="row">
@@ -94,10 +129,10 @@
                 @Html.DisplayFor(modelItem => transaction.Amount)
             </div>
             <div class="col-md-2">
-                @Html.DropDownList(transaction.TransactionID + transaction.Vendor.VendorName, new SelectList(ViewBag.Vendors, "VendorID", "VendorName", transaction.VendorID))
+                @Html.DropDownList(transaction.TransactionID + transaction.Vendor.VendorName, new SelectList(ViewBag.Vendors, "VendorID", "VendorName"), transaction.Vendor.VendorName, new { @id = "Vendor-" + transaction.TransactionID + transaction.Vendor.VendorName })
             </div>
             <div class="col-md-2">
-                @Html.DropDownList(transaction.TransactionID + transaction.Category.CategoryName, new SelectList(ViewBag.Categories, "CategoryID", "CategoryName", transaction.CategoryID))
+                @Html.DropDownList(transaction.TransactionID + transaction.Category.CategoryName, new SelectList(ViewBag.Categories, "CategoryID", "CategoryName"), transaction.Category.CategoryName, new { @id = "Category-" + transaction.TransactionID + transaction.Category.CategoryName })
             </div>
             <div class="col-md-1">
                 <input type="hidden" id="TransactionID" name="TransactionID" value="@transaction.TransactionID" />
@@ -110,7 +145,7 @@
         </div>
 
         <hr/>
-    @*</form>*@
+
 
 
     @*@section Scripts

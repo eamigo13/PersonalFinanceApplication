@@ -200,7 +200,7 @@ INSERT INTO Vendor(VendorName) VALUES
 INSERT INTO VendorCategory VALUES
 (5, 1, 10),
 (3, 5, 4),
-(1, 1, 4),
+(1, 1, 3),
 (1, 5, 3),
 (4, 3, 2);
 
