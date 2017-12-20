@@ -234,11 +234,12 @@ namespace PersonalFinanceApplication.Controllers
         /* POST: Transactions/Confirm
          */
         [HttpPost]
-        public JsonResult Confirm(int TransactionID, int CategoryID, int VendorID)
+        public JsonResult Confirm(ConfirmedTransaction confirmed)
         {
-            var transaction = db.Transactions.Find(TransactionID);
-            transaction.VendorID = VendorID;
-            transaction.CategoryID = CategoryID;
+
+            var transaction = db.Transactions.Find(confirmed.TransactionID);
+            transaction.VendorID = confirmed.VendorID;
+            transaction.CategoryID = confirmed.CategoryID;
             transaction.StatusID = 1;
 
             if (ModelState.IsValid)
@@ -247,7 +248,7 @@ namespace PersonalFinanceApplication.Controllers
                 db.SaveChanges();
             }
 
-            return Json(TransactionID);
+            return Json(confirmed.TransactionID);
         }
     }
 }

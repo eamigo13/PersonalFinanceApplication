@@ -9,12 +9,18 @@
 
     //Post the TransactionID, CategoryID, and VendorID to the Transactions/Confirm (post)
     function confirm(id, cval, vval) {
+
+        //create the transaction object using JSON syntax
+        var transaction = {
+            "TransactionID": id,
+            "CategoryID": cval,
+            "VendorID": vval
+        };
+
         $.ajax({
             type: 'POST', //HTTP POST Method
             url: '/Transactions/Confirm', // Controller/View
-            data: '{TransactionID: ' + JSON.stringify(id) +
-            ', CategoryID: ' + JSON.stringify(cval) +
-            ', VendorID: ' + JSON.stringify(vval) + '}',
+            data: JSON.stringify(transaction),
             dataType: "json",
             contentType: 'application/json; charset=utf-8',
             success: function () {
