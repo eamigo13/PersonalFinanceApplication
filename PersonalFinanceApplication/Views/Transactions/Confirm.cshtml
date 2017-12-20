@@ -19,8 +19,12 @@
             contentType: 'application/json; charset=utf-8',
             success: function () {
                 //alert("Success");
-                $('#' + id).hide();
-                $('#hr-' + id).hide();
+                $('#' + id).remove();
+                $('#hr-' + id).remove();
+                if (!$(".transaction")[0]) {
+                    $('#main').empty();
+                    $('#main').append("<br/><h1>There Are No Unconfirmed Transactions</h1>");
+                } 
             },
             failure: function (response) {
                 alert("Fail");
@@ -35,47 +39,54 @@
 
         $("#ConfirmAll").click(function () {
 
-            for (i = 0; i < @Model.Count(); i++)
-            {
-                var categoryvalue = $("#Category-" + i).val();
-                var vendorvalue = $("#Vendor-" + i).val();
+            $(".transaction").hide();
+            $(".transactionhr").hide();
 
-                confirm(i, categoryvalue, vendorvalue);
-            }
+            $('.transaction').each(function (i, obj) {
+
+                var transactionID = parseInt(obj.id);
+                var categoryID = $('#Category-' + transactionID).val();
+                var vendorID = $('#Vendor-' + transactionID).val();
+
+                confirm(transactionID, categoryID, vendorID);
+            });
+            
         });
 
     })
 
 </script>
 
-<h2>Confirm</h2>
-<button class="btn btn-success pull-right" id="ConfirmAll">Confirm All</button>
-<br />
-<hr />
+<div id="main">
 
-<div class="row">
-    <div class="col-md-1">
-        <b>Date</b>
+    <h2>Confirm</h2>
+    <button class="btn btn-success pull-right" id="ConfirmAll">Confirm All</button>
+    <br />
+    <hr />
+
+    <div class="row">
+        <div class="col-md-1">
+            <b>Date</b>
+        </div>
+        <div class="col-md-3">
+            <b>Description</b>
+        </div>
+        <div class="col-md-1">
+            <b>Amount</b>
+        </div>
+        <div class="col-md-2">
+            <b>Vendor</b>
+        </div>
+        <div class="col-md-2">
+            <b>Category</b>
+        </div>
     </div>
-    <div class="col-md-3">
-        <b>Description</b>
-    </div>
-    <div class="col-md-1">
-        <b>Amount</b>
-    </div>
-    <div class="col-md-2">
-        <b>Vendor</b>
-    </div>
-    <div class="col-md-2">
-        <b>Category</b>
-    </div>
-</div>
-<hr />
+    <hr />
 
 
-@foreach (var transaction in Model)
-{
-    <script>
+    @foreach (var transaction in Model)
+    {
+        <script>
 
         $(document).ready(function () {
 
@@ -100,34 +111,34 @@
 
         })
 
-    </script>
+        </script>
 
-    <div class="row" id="@transaction.TransactionID">
-        <div class="col-md-1">
-            @transaction.Date.ToString("MM/dd/yyyy")
+        <div class="row transaction" id="@transaction.TransactionID">
+            <div class="col-md-1">
+                @transaction.Date.ToString("MM/dd/yyyy")
+            </div>
+            <div class="col-md-3">
+                @Html.DisplayFor(modelItem => transaction.Description)
+            </div>
+            <div class="col-md-1">
+                @Html.DisplayFor(modelItem => transaction.Amount)
+            </div>
+            <div class="col-md-2">
+                @Html.DropDownList(transaction.TransactionID + "Vendor", new SelectList(ViewBag.Vendors, "VendorID", "VendorName", transaction.Vendor.VendorID), new { @id = "Vendor-" + transaction.TransactionID })
+            </div>
+            <div class="col-md-2">
+                @Html.DropDownList(transaction.TransactionID + "Category", new SelectList(ViewBag.Categories, "CategoryID", "CategoryName", transaction.Category.CategoryID), new { @id = "Category-" + transaction.TransactionID })
+            </div>
+            <div class="col-md-1">
+                <input type="button" value="Confirm" id="Confirm-@transaction.TransactionID" class="btn btn-success" />
+            </div>
+            <div class="col-md-1">
+                <a class="btn btn-default" href="@Url.Action("Details", "Transactions", new { id = transaction.TransactionID })">View Details</a>
+            </div>
         </div>
-        <div class="col-md-3">
-            @Html.DisplayFor(modelItem => transaction.Description)
-        </div>
-        <div class="col-md-1">
-            @Html.DisplayFor(modelItem => transaction.Amount)
-        </div>
-        <div class="col-md-2">
-            @Html.DropDownList(transaction.TransactionID + "Vendor", new SelectList(ViewBag.Vendors, "VendorID", "VendorName", transaction.Vendor.VendorID), new { @id = "Vendor-" + transaction.TransactionID })
-        </div>
-        <div class="col-md-2">
-            @Html.DropDownList(transaction.TransactionID + "Category", new SelectList(ViewBag.Categories, "CategoryID", "CategoryName", transaction.Category.CategoryID), new { @id = "Category-" + transaction.TransactionID })
-        </div>
-        <div class="col-md-1">
-            <input type="button" value="Confirm" id="Confirm-@transaction.TransactionID" class="btn btn-success" />
-        </div>
-        <div class="col-md-1">
-            <a class="btn btn-default" href="@Url.Action("Details", "Transactions", new { id = transaction.TransactionID })">View Details</a>
-        </div>
-    </div>
 
-    <hr id="hr-@transaction.TransactionID"/>
-}
-
+        <hr class ="transactionhr" id="hr-@transaction.TransactionID" />
+    }
+</div>
 
 
