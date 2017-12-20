@@ -8,6 +8,13 @@ namespace PersonalFinanceApplication
         // For more information on bundling, visit https://go.microsoft.com/fwlink/?LinkId=301862
         public static void RegisterBundles(BundleCollection bundles)
         {
+            // Jquery validator & unobstrusive ajax  
+            bundles.Add(new ScriptBundle("~/bundles/jqueryval").Include(
+                "~/Scripts/jquery.unobtrusive-ajax.js",
+                "~/Scripts/jquery.unobtrusive-ajax.min.js",
+                "~/Scripts/jquery.validate*",
+                "~/Scripts/jquery.validate.unobtrusive.js",
+                "~/Scripts/jquery.validate.unobtrusive.min.js"));
             bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
                         "~/Scripts/jquery-{version}.js"));
 

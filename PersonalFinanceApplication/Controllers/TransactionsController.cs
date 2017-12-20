@@ -230,5 +230,25 @@ namespace PersonalFinanceApplication.Controllers
             }
             base.Dispose(disposing);
         }
+
+        /* POST: Transactions/Confirm
+         */
+        [HttpPost]
+        public JsonResult Confirm(ConfirmedTransaction confirmed)
+        {
+
+            var transaction = db.Transactions.Find(confirmed.TransactionID);
+            transaction.VendorID = confirmed.VendorID;
+            transaction.CategoryID = confirmed.CategoryID;
+            transaction.StatusID = 1;
+
+            if (ModelState.IsValid)
+            {
+                db.Entry(transaction).State = EntityState.Modified;
+                db.SaveChanges();
+            }
+
+            return Json(confirmed.TransactionID);
+        }
     }
 }

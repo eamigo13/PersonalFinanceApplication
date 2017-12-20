@@ -234,6 +234,7 @@
     <Compile Include="Models\Category.cs" />
     <Compile Include="Models\CategoryType.cs" />
     <Compile Include="Models\Column.cs" />
+    <Compile Include="Models\ConfirmedTransaction.cs" />
     <Compile Include="Models\FailedRow.cs" />
     <Compile Include="Models\FailedRowError.cs" />
     <Compile Include="Models\IdentityModels.cs" />

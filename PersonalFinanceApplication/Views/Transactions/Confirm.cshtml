@@ -3,52 +3,148 @@
     ViewBag.Title = "Confirm";
 }
 
-<h2>Confirm</h2>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
-<hr />
+<script>
 
-<div class="row">
-    <div class="col-md-1">
-        <b>Date</b>
-    </div>
-    <div class="col-md-3">
-        <b>Description</b>
-    </div>
-    <div class="col-md-1">
-        <b>Amount</b>
-    </div>
-    <div class="col-md-2">
-        <b>Vendor</b>
-    </div>
-    <div class="col-md-2">
-        <b>Category</b>
-    </div>
-</div>
-<hr />
+    //Post the TransactionID, CategoryID, and VendorID to the Transactions/Confirm (post)
+    function confirm(id, cval, vval) {
 
+        //create the transaction object using JSON syntax
+        var transaction = {
+            "TransactionID": id,
+            "CategoryID": cval,
+            "VendorID": vval
+        };
 
-@foreach(var transaction in Model)
-{
+        $.ajax({
+            type: 'POST', //HTTP POST Method
+            url: '/Transactions/Confirm', // Controller/View
+            data: JSON.stringify(transaction),
+            dataType: "json",
+            contentType: 'application/json; charset=utf-8',
+            success: function () {
+                //alert("Success");
+                $('#' + id).remove();
+                $('#hr-' + id).remove();
+                if (!$(".transaction")[0]) {
+                    $('#main').empty();
+                    $('#main').append("<br/><h1>There Are No Unconfirmed Transactions</h1>");
+                } 
+            },
+            failure: function (response) {
+                alert("Fail");
+            },
+            error: function (response) {
+                alert("Fail");
+            }
+        });
+    }
+
+    $(document).ready(function () {
+
+        $("#ConfirmAll").click(function () {
+
+            $(".transaction").hide();
+            $(".transactionhr").hide();
+
+            $('.transaction').each(function (i, obj) {
+
+                var transactionID = parseInt(obj.id);
+                var categoryID = $('#Category-' + transactionID).val();
+                var vendorID = $('#Vendor-' + transactionID).val();
+
+                confirm(transactionID, categoryID, vendorID);
+            });
+            
+        });
+
+    })
+
+</script>
+
+<div id="main">
+
+    <h2>Confirm</h2>
+    <button class="btn btn-success pull-right" id="ConfirmAll">Confirm All</button>
+    <br />
+    <hr />
+
     <div class="row">
         <div class="col-md-1">
-            @transaction.Date.ToString("MM/dd/yyyy")
+            <b>Date</b>
         </div>
         <div class="col-md-3">
-            @Html.DisplayFor(modelItem => transaction.Description)
+            <b>Description</b>
         </div>
         <div class="col-md-1">
-            @Html.DisplayFor(modelItem => transaction.Amount)
+            <b>Amount</b>
         </div>
         <div class="col-md-2">
-            @Html.DropDownListFor(modelItem => transaction.VendorID, new SelectList(ViewBag.Vendors, "VendorID", "VendorName", transaction.VendorID))
+            <b>Vendor</b>
         </div>
         <div class="col-md-2">
-            @Html.DropDownList("CategoryID", new SelectList(ViewBag.Categories, "CategoryID", "CategoryName", transaction.CategoryID))
+            <b>Category</b>
         </div>
     </div>
+    <hr />
 
-    <hr/>
-}
 
+    @foreach (var transaction in Model)
+    {
+        <script>
+
+        $(document).ready(function () {
+
+            //These values store the value of the selected VendorID and CategoryID
+            var categoryvalue = $("#Category-@transaction.TransactionID").val();
+            var vendorvalue = $("#Vendor-@transaction.TransactionID").val();
+
+            //If the selected value of the category is changed, update the value of categoryvalue
+            $("#Category-@transaction.TransactionID").change(function () {
+                categoryvalue = $("#Category-@transaction.TransactionID").val();
+            });
+
+            //If the selected value of the vendor is changed, update the value of vendorvalue
+            $("#Vendor-@transaction.TransactionID").change(function () {
+                vendorvalue = $("#Vendor-@transaction.TransactionID").val();
+            });
+
+            //Pass the transactionID, CategoryID, and VendorID to the confirm function to be posted to the server
+            $("#Confirm-@transaction.TransactionID").click(function () {
+                confirm(@transaction.TransactionID, categoryvalue, vendorvalue)
+            });
+
+        })
+
+        </script>
+
+        <div class="row transaction" id="@transaction.TransactionID">
+            <div class="col-md-1">
+                @transaction.Date.ToString("MM/dd/yyyy")
+            </div>
+            <div class="col-md-3">
+                @Html.DisplayFor(modelItem => transaction.Description)
+            </div>
+            <div class="col-md-1">
+                @Html.DisplayFor(modelItem => transaction.Amount)
+            </div>
+            <div class="col-md-2">
+                @Html.DropDownList(transaction.TransactionID + "Vendor", new SelectList(ViewBag.Vendors, "VendorID", "VendorName", transaction.Vendor.VendorID), new { @id = "Vendor-" + transaction.TransactionID })
+            </div>
+            <div class="col-md-2">
+                @Html.DropDownList(transaction.TransactionID + "Category", new SelectList(ViewBag.Categories, "CategoryID", "CategoryName", transaction.Category.CategoryID), new { @id = "Category-" + transaction.TransactionID })
+            </div>
+            <div class="col-md-1">
+                <input type="button" value="Confirm" id="Confirm-@transaction.TransactionID" class="btn btn-success" />
+            </div>
+            <div class="col-md-1">
+                <a class="btn btn-default" href="@Url.Action("Details", "Transactions", new { id = transaction.TransactionID })">View Details</a>
+            </div>
+        </div>
+
+        <hr class ="transactionhr" id="hr-@transaction.TransactionID" />
+    }
+</div>
 
 
