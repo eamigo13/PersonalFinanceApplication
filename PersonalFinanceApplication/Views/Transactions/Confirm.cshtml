@@ -131,6 +131,7 @@
             </div>
             <div class="col-md-2">
                 @Html.DropDownList(transaction.TransactionID + "Vendor", new SelectList(ViewBag.Vendors, "VendorID", "VendorName", transaction.Vendor.VendorID), new { @id = "Vendor-" + transaction.TransactionID })
+                <input type="button" value="Confirm" id="NewVendor-@transaction.TransactionID" class="btn btn-default" />
             </div>
             <div class="col-md-2">
                 @Html.DropDownList(transaction.TransactionID + "Category", new SelectList(ViewBag.Categories, "CategoryID", "CategoryName", transaction.Category.CategoryID), new { @id = "Category-" + transaction.TransactionID })

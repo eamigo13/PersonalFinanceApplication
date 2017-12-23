@@ -25,6 +25,7 @@ namespace PersonalFinanceApplication.DAL
         public virtual DbSet<Transaction> Transactions { get; set; }
         public virtual DbSet<Vendor> Vendors { get; set; }
         public virtual DbSet<VendorAbbrev> VendorAbbrevs { get; set; }
+        public virtual DbSet<VendorCategory> VendorCategory { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -33,10 +34,10 @@ namespace PersonalFinanceApplication.DAL
                 .WithMany(e => e.Budgets)
                 .Map(m => m.ToTable("BudgetCategory").MapLeftKey("BudgetID").MapRightKey("CategoryID"));
 
-            modelBuilder.Entity<Category>()
-                .HasMany(e => e.Vendors)
-                .WithMany(e => e.Categories)
-                .Map(m => m.ToTable("VendorCategory").MapLeftKey("CategoryID").MapRightKey("VendorID"));
+            //modelBuilder.Entity<Category>()
+            //    .HasMany(e => e.Vendors)
+            //    .WithMany(e => e.Categories)
+            //    .Map(m => m.ToTable("VendorCategory").MapLeftKey("CategoryID").MapRightKey("VendorID"));
         }
     }
 }
