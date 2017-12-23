@@ -3,6 +3,7 @@
     ViewBag.Title = "Confirm";
 }
 
+<link rel="stylesheet" href="~/Content/Modal.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
 <script>
@@ -41,13 +42,18 @@
         });
     }
 
+    
     $(document).ready(function () {
 
+        //Confirm all transactions on the page
+        //Execute this code when the confirm all button is clicked
         $("#ConfirmAll").click(function () {
 
+            //Hide all the transactions on the page as they are getting confirmed.
             $(".transaction").hide();
             $(".transactionhr").hide();
 
+            //Go through each transaction
             $('.transaction').each(function (i, obj) {
 
                 var transactionID = parseInt(obj.id);
@@ -59,9 +65,94 @@
             
         });
 
+        //This is used to track the transaction ID of the transaction being maniputlated
+        var TransactionID = 0;
+
+        // When the user clicks on any AddVendor button, open the AddVendor modal 
+        $(".AddVendor").click(function (e) {
+            e.preventDefault();
+
+            //Extract the transaction id from the id of the DOM object
+            TransactionID = this.id.match(/\d+/g);
+
+            //Show the modal
+            vendormodal.style.display = "block";
+        });
+
+        //Add a Vendor when Add Vendor button is clicked
+        $("#AddVendor").click(function () {
+
+            var vendor = {
+                "VendorName": $('#VName').val()
+            }
+
+            $.ajax({
+                type: 'POST', //HTTP POST Method
+                url: '/Vendors/Add', // Controller/View
+                data: JSON.stringify(vendor),
+                dataType: "json",
+                contentType: 'application/json; charset=utf-8',
+                success: function (response) {
+                    //Make the vendor modal disappear
+                    vendormodal.style.display = "none";
+
+                    //Change the vendor of the transaction to the vendor that was just added
+                    $("#Vendor-" + TransactionID).append('<option value="' + response.VendorID + '">' + response.VendorName + '</option > ');
+                    $("#Vendor-" + TransactionID).val(response.VendorID).trigger('change');
+
+                    //Reset the Add Vendor form
+                    $('#VName').val('');
+                },
+                failure: function (response) {
+                    alert("Fail");
+                },
+                error: function (response) {
+                    alert("Fail");
+                }
+            });
+        });
+        // Get the modal
+        var vendormodal = document.getElementById('VendorModal');
+
+        // Get the button that opens the modal
+        var btn = document.getElementById("myBtn");
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+
+        
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function () {
+            vendormodal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function (event) {
+            if (event.target == vendormodal) {
+                vendormodal.style.display = "none";
+            }
+        }
+
     })
 
 </script>
+
+<!-- Trigger/Open The Modal -->
+<button id="myBtn">Open Modal</button>
+
+<!-- The Modal -->
+<div id="VendorModal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Add a New Vendor</h3>
+        <input type="text" id="VName" placeholder="Vendor Name" />  
+        <input type="button" value="Add" id="AddVendor" />
+    </div>
+
+</div>
 
 <div id="main">
 
@@ -131,16 +222,20 @@
             </div>
             <div class="col-md-2">
                 @Html.DropDownList(transaction.TransactionID + "Vendor", new SelectList(ViewBag.Vendors, "VendorID", "VendorName", transaction.Vendor.VendorID), new { @id = "Vendor-" + transaction.TransactionID })
-                <input type="button" value="Confirm" id="NewVendor-@transaction.TransactionID" class="btn btn-default" />
+                <br /><a class="AddVendor" id="AddVendor-@transaction.TransactionID" href="">Add Vendor</a>
             </div>
             <div class="col-md-2">
                 @Html.DropDownList(transaction.TransactionID + "Category", new SelectList(ViewBag.Categories, "CategoryID", "CategoryName", transaction.Category.CategoryID), new { @id = "Category-" + transaction.TransactionID })
+                <br /><a class="AddCategory" id="AddCategory-@transaction.TransactionID" href="">Add Category</a>
             </div>
             <div class="col-md-1">
                 <input type="button" value="Confirm" id="Confirm-@transaction.TransactionID" class="btn btn-success" />
             </div>
             <div class="col-md-1">
-                <a class="btn btn-default" href="@Url.Action("Details", "Transactions", new { id = transaction.TransactionID })">View Details</a>
+                <a class="btn btn-default" href="@Url.Action("Details", "Transactions", new { id = transaction.TransactionID })">Details</a>
+            </div>
+            <div class="col-md-1">
+                
             </div>
         </div>
 
