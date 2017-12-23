@@ -72,11 +72,30 @@
         $(".AddVendor").click(function (e) {
             e.preventDefault();
 
+            //Add the focus to the textbox.
+            //$('#VName').focus();
+            document.getElementById("VName").focus();
+
             //Extract the transaction id from the id of the DOM object
             TransactionID = this.id.match(/\d+/g);
 
             //Show the modal
             vendormodal.style.display = "block";
+        });
+
+        // When the user clicks on any AddCategory button, open the AddCategory modal 
+        $(".AddCategory").click(function (e) {
+            e.preventDefault();
+
+            //Add the focus to the textbox.
+            //$('#CName').focus();
+            document.getElementById("CName").focus();
+
+            //Extract the transaction id from the id of the DOM object
+            TransactionID = this.id.match(/\d+/g);
+
+            //Show the modal
+            categorymodal.style.display = "block";
         });
 
         //Add a Vendor when Add Vendor button is clicked
@@ -111,26 +130,61 @@
                 }
             });
         });
+
+        //Add a Vendor when Add Vendor button is clicked
+        $("#AddCategory").click(function () {
+
+            var category = {
+                "CategoryName": $('#CName').val()
+            }
+
+            $.ajax({
+                type: 'POST', //HTTP POST Method
+                url: '/Categories/Add', // Controller/View
+                data: JSON.stringify(category),
+                dataType: "json",
+                contentType: 'application/json; charset=utf-8',
+                success: function (response) {
+                    //Make the vendor modal disappear
+                    categorymodal.style.display = "none";
+
+                    //Change the vendor of the transaction to the vendor that was just added
+                    $("#Category-" + TransactionID).append('<option value="' + response.CategoryID + '">' + response.CategoryName + '</option > ');
+                    $("#Category-" + TransactionID).val(response.CategoryID).trigger('change');
+
+                    //Reset the Add Vendor form
+                    $('#CName').val('');
+                },
+                failure: function (response) {
+                    alert("Fail");
+                },
+                error: function (response) {
+                    alert("Fail");
+                }
+            });
+        });
+
         // Get the modal
         var vendormodal = document.getElementById('VendorModal');
-
-        // Get the button that opens the modal
-        var btn = document.getElementById("myBtn");
+        var categorymodal = document.getElementById('CategoryModal');
 
         // Get the <span> element that closes the modal
-        var span = document.getElementsByClassName("close")[0];
+        var vspan = document.getElementsByClassName("close")[0];
 
-        
 
         // When the user clicks on <span> (x), close the modal
-        span.onclick = function () {
+        $(".close").click(function () {
             vendormodal.style.display = "none";
-        }
+            categorymodal.style.display = "none";
+        });
 
         // When the user clicks anywhere outside of the modal, close it
         window.onclick = function (event) {
             if (event.target == vendormodal) {
                 vendormodal.style.display = "none";
+            }
+            if (event.target == categorymodal) {
+                categorymodal.style.display = "none";
             }
         }
 
@@ -138,18 +192,27 @@
 
 </script>
 
-<!-- Trigger/Open The Modal -->
-<button id="myBtn">Open Modal</button>
 
-<!-- The Modal -->
+<!-- Add Vendor pop up -->
 <div id="VendorModal" class="modal">
 
-    <!-- Modal content -->
     <div class="modal-content">
         <span class="close">&times;</span>
         <h3>Add a New Vendor</h3>
         <input type="text" id="VName" placeholder="Vendor Name" />  
         <input type="button" value="Add" id="AddVendor" />
+    </div>
+
+</div>
+
+<!-- Add Vendor pop up -->
+<div id="CategoryModal" class="modal">
+
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Add a New Category</h3>
+        <input type="text" id="CName" placeholder="Category Name" />
+        <input type="button" value="Add" id="AddCategory" />
     </div>
 
 </div>
