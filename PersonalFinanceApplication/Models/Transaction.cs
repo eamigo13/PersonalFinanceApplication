@@ -45,6 +45,8 @@ namespace PersonalFinanceApplication.Models
 
         public int? StatusID { get; set; }
 
+        public bool VendorDetected { get; set; }
+
         public virtual Batch Batch { get; set; }
 
         public virtual Account Account { get; set; }

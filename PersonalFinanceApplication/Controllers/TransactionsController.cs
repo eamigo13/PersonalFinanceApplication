@@ -8,6 +8,7 @@ using System.Web;
 using System.Web.Mvc;
 using PersonalFinanceApplication.DAL;
 using PersonalFinanceApplication.Models;
+using System.Web.Script.Serialization;
 
 namespace PersonalFinanceApplication.Controllers
 {
@@ -43,6 +44,7 @@ namespace PersonalFinanceApplication.Controllers
                     if(transaction.Description.Contains(vndrstring.Abbrev))
                     {
                         transaction.VendorID = vndrstring.VendorID;
+                        transaction.VendorDetected = true;
                         VendorFound = true;
                         break;
                     }
@@ -52,6 +54,7 @@ namespace PersonalFinanceApplication.Controllers
                 if (!VendorFound)
                 {
                     transaction.VendorID = 0;
+                    transaction.VendorDetected = false;
                 }
             }
 
@@ -269,8 +272,9 @@ namespace PersonalFinanceApplication.Controllers
                 db.SaveChanges();
             }
 
-
-            return Json(confirmed.TransactionID);
+            confirmed.VendorDetected = transaction.VendorDetected;
+            confirmed.Description = transaction.Description;
+            return Json(confirmed);
         }
     }
 }

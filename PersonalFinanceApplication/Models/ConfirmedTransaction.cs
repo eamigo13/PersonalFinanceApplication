@@ -14,5 +14,7 @@ namespace PersonalFinanceApplication.Models
         public int TransactionID { get; set; }
         public int CategoryID { get; set; }
         public int VendorID { get; set; }
+        public bool VendorDetected { get; set; }
+        public string Description { get; set; }
     }
 }

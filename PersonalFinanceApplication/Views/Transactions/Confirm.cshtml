@@ -24,8 +24,20 @@
             data: JSON.stringify(transaction),
             dataType: "json",
             contentType: 'application/json; charset=utf-8',
-            success: function () {
+            success: function (response) {
                 //alert("Success");
+
+                //If the vendor wasn't automatically detected, prompt user to add vendor abbrev
+                if (!response.VendorDetected)
+                {
+                    document.getElementById("VendorAbbrevModal").style.display = "block";
+                    $('#Abbrev').attr('size', response.Description.length);
+                    $('#Abbrev').val(response.Description);
+                    $('#AbbrevVendor').val(response.VendorID);
+
+                }
+
+                //Remove the transaction from the list
                 $('#' + id).remove();
                 $('#hr-' + id).remove();
                 if (!$(".transaction")[0]) {
@@ -131,7 +143,7 @@
             });
         });
 
-        //Add a Vendor when Add Vendor button is clicked
+        //Add a Category when Add Category button is clicked
         $("#AddCategory").click(function () {
 
             var category = {
@@ -164,9 +176,39 @@
             });
         });
 
+        //Add a Category when Add Category button is clicked
+        $("#AddAbbrev").click(function () {
+
+            var abbrev = {
+                "VendorID": $('#AbbrevVendor').val(),
+                "Abbrev": $('#Abbrev').val()
+            }
+
+            $.ajax({
+                type: 'POST', //HTTP POST Method
+                url: '/Vendors/AddAbbrev', // Controller/View
+                data: JSON.stringify(abbrev),
+                dataType: "json",
+                contentType: 'application/json; charset=utf-8',
+                success: function (response) {
+                    //alert("Success");
+
+                    //Make the modal disappear
+                    abbrevmodal.style.display = "none";
+                },
+                failure: function (response) {
+                    alert("Fail");
+                },
+                error: function (response) {
+                    alert("Fail");
+                }
+            });
+        });
+
         // Get the modal
         var vendormodal = document.getElementById('VendorModal');
         var categorymodal = document.getElementById('CategoryModal');
+        var abbrevmodal = document.getElementById('VendorAbbrevModal');
 
         // Get the <span> element that closes the modal
         var vspan = document.getElementsByClassName("close")[0];
@@ -176,6 +218,7 @@
         $(".close").click(function () {
             vendormodal.style.display = "none";
             categorymodal.style.display = "none";
+            abbrevmodal.style.display = "none";
         });
 
         // When the user clicks anywhere outside of the modal, close it
@@ -186,6 +229,9 @@
             if (event.target == categorymodal) {
                 categorymodal.style.display = "none";
             }
+            if (event.target == abbrevmodal) {
+                abbrevmodal.style.display = "none";
+            }
         }
 
     })
@@ -193,7 +239,7 @@
 </script>
 
 
-<!-- Add Vendor pop up -->
+<!-- Vendor pop up -->
 <div id="VendorModal" class="modal">
 
     <div class="modal-content">
@@ -205,7 +251,7 @@
 
 </div>
 
-<!-- Add Vendor pop up -->
+<!-- Category pop up -->
 <div id="CategoryModal" class="modal">
 
     <div class="modal-content">
@@ -213,6 +259,20 @@
         <h3>Add a New Category</h3>
         <input type="text" id="CName" placeholder="Category Name" />
         <input type="button" value="Add" id="AddCategory" />
+    </div>
+
+</div>
+
+
+<!-- VendorAbbrev pop up -->
+<div id="VendorAbbrevModal" class="modal">
+
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <p><strong>We were unable to automatically detect this vendor. Please enter in the part of the description that sets this vendor apart</strong></p>
+        <input type="hidden" id="AbbrevVendor" />
+        <input type="text" id="Abbrev" placeholder="Abbreviation" /><br />
+        <input type="button" value="Add" id="AddAbbrev" />
     </div>
 
 </div>

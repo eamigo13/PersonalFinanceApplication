@@ -17,7 +17,5 @@ namespace PersonalFinanceApplication.Models
         [Required]
         [StringLength(50)]
         public string Abbrev { get; set; }
-
-        public virtual Vendor Vendor { get; set; }
     }
 }

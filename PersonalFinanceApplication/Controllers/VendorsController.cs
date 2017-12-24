@@ -22,5 +22,20 @@ namespace PersonalFinanceApplication.Controllers
             db.SaveChanges();
             return Json(vendor);
         }
+
+        /* POST -- /Vendors/AddAbbrev
+         * This method adds a new Vendor to the db.
+         */
+        [HttpPost]
+        public JsonResult AddAbbrev(int VendorID, string Abbrev)
+        {
+            VendorAbbrev abbrev = new VendorAbbrev();
+
+            abbrev.VendorID = VendorID;
+            abbrev.Abbrev = Abbrev;
+            db.VendorAbbrevs.Add(abbrev);
+            db.SaveChanges();
+            return Json(abbrev);
+        }
     }
 }

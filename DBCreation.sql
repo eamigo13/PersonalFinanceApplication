@@ -102,6 +102,7 @@ CREATE TABLE [Transaction] (
   [CategoryID] int,
   [BatchID] int,
   [StatusID] int,
+  [VendorDetected] bit,
   CONSTRAINT PK_Transaction PRIMARY KEY ([TransactionID]),
   CONSTRAINT FK_Transaction_Account FOREIGN KEY (AccountID) REFERENCES Account(AccountID),
   CONSTRAINT FK_Transaction_Vendor FOREIGN KEY (VendorID) REFERENCES Vendor(VendorID),
