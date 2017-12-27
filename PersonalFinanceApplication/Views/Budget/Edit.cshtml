@@ -1,61 +1,170 @@
-﻿@model PersonalFinanceApplication.Models.Budget
-
+﻿@model IEnumerable<PersonalFinanceApplication.Models.BudgetCategory>
 @{
-    ViewBag.Title = "Edit";
+    ViewBag.Title = "View";
 }
 
-<h2>Edit</h2>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
 
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
-    
-    <div class="form-horizontal">
-        <h4>Budget</h4>
-        <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        @Html.HiddenFor(model => model.BudgetID)
+<script>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.BudgetName, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.BudgetName, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.BudgetName, "", new { @class = "text-danger" })
-            </div>
+    function Update(budgetid, categoryid, amount) {
+
+        var updatedbudgetcategory = {
+            "BudgetID": budgetid,
+            "CategoryID": categoryid,
+            "Amount": amount
+        };
+
+        $.ajax({
+            type: 'POST', //HTTP POST Method
+            url: '/Budget/UpdateCategory', // Controller/View
+            data: JSON.stringify(updatedbudgetcategory),
+            dataType: "json",
+            contentType: 'application/json; charset=utf-8',
+            success: function (response) {
+                alert("Success");
+            },
+            failure: function (response) {
+                alert("Fail");
+            },
+            error: function (response) {
+                alert("Fail");
+            }
+        });
+    }
+
+    function Delete(budgetid, categoryid) {
+
+        var deletedbudgetcategory = {
+            "BudgetID": budgetid,
+            "CategoryID": categoryid
+        };
+
+        $.ajax({
+            type: 'POST', //HTTP POST Method
+            url: '/Budget/DeleteCategory', // Controller/View
+            data: JSON.stringify(deletedbudgetcategory),
+            dataType: "json",
+            contentType: 'application/json; charset=utf-8',
+            success: function (response) {
+                //alert("Success");
+                $('#' + categoryid).remove();
+            },
+            failure: function (response) {
+                alert("Fail");
+            },
+            error: function (response) {
+                alert("Fail");
+            }
+        });
+    }
+
+    $(document).ready(function () {
+
+        $('#AddCategoryRow').hide();
+
+        $("#AddCategoryBtn").click(function () {
+            $('#AddCategoryRow').show();
+        });
+
+        $("#AddNewCategoryBtn").click(function () {
+            var newbudgetcategory = {
+                "BudgetID": @ViewBag.budget.BudgetID,
+                "CategoryID": $('#NewCategoryID').val(),
+                "Amount": $('#NewCategoryAmount').val()
+            }
+
+            AddCategory(newbudgetcategory);
+        });
+
+        $("#CancelNewCategoryBtn").click(function () {
+            $('#AddCategoryRow').hide();
+        });
+
+        function AddCategory(budgetcategory) {
+            $.ajax({
+                type: 'POST', //HTTP POST Method
+                url: '/Budget/AddCategory', // Controller/View
+                data: JSON.stringify(budgetcategory),
+                dataType: "json",
+                contentType: 'application/json; charset=utf-8',
+                success: function (response) {
+                    //alert("Success");
+                    var newrow = "<div id=\"" + budgetcategory.CategoryID + "\"><div class=\"row\"><div class=\"col-md-2\"><p>" + response + "</p></div><div class=\"col-md-2\"><input id=\"Amount-" + budgetcategory.CategoryID + "\" type=\"number\" class=\"form-control\" value=\"" + budgetcategory.Amount + "\" placeholder=\"Amount\" /></div><div class=\"col-md-1\"><button onclick=\"Update(" + budgetcategory.BudgetID + "," + budgetcategory.CategoryID + ", $(\'#Amount-\'+" + budgetcategory.CategoryID + ").val())\" class=\"btn btn-success\">Update</button></div><div class=\"col-md-1\"><button onclick=\"Delete(" + budgetcategory.BudgetID + "," + budgetcategory.CategoryID + ")\" class=\"btn btn-danger\">Remove</button></div></div><hr /></div>";
+                    $('#Categories').append(newrow);
+                    $('#AddCategoryRow').hide();
+                    $('#NewCategoryAmount').val('');
+                },
+                failure: function (response) {
+                    alert("Fail");
+                },
+                error: function (response) {
+                    alert("Fail");
+                }
+            });
+        }
+    })
+
+</script>
+
+<h2>@ViewBag.budget.BudgetName</h2>
+<h3>From @ViewBag.budget.BeginDate to @ViewBag.budget.EndDate</h3>
+<p>@ViewBag.budget.Description</p>
+
+<hr />
+
+<div id="Categories">
+    <div class="row">
+        <div class="col-md-2">
+            <strong>Category</strong>
         </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Description, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
-            </div>
+        <div class="col-md-2">
+            <strong>Amount</strong>
         </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.BeginDate, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.BeginDate, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.BeginDate, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.EndDate, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.EndDate, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.EndDate, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save" class="btn btn-default" />
-            </div>
+        <div class="col-md-1">
+            <button id="AddCategoryBtn" class="btn btn-success">Add Category</button>
         </div>
     </div>
-}
+    <hr />
 
-<div>
-    @Html.ActionLink("Back to List", "Index")
+    <div id="AddCategoryRow"> 
+        <div class="row">
+            <div class="col-md-2">
+                @Html.DropDownList("CategoryID", new SelectList(ViewBag.Categories, "CategoryID", "CategoryName"), new { @class = "form-control", @id = "NewCategoryID" })
+            </div>
+            <div class="col-md-2">
+                <input id="NewCategoryAmount" type="number" class="form-control" placeholder="Amount" />
+            </div>
+            <div class="col-md-2">
+                <button id="AddNewCategoryBtn" class="btn btn-success">Add</button>
+                <button id="CancelNewCategoryBtn" class="btn btn-danger">Cancel</button>
+            </div>
+        </div>
+        <hr />
+    </div>
+
+    @foreach (var item in Model)
+    {
+
+        <div id="@item.CategoryID">
+            <div class="row">
+                <div class="col-md-2">
+                   <p>@item.Category.CategoryName</p>
+                </div>
+                <div class="col-md-2">
+                    <input id="Amount-@item.CategoryID" type="number" class="form-control" value="@item.Amount" placeholder="Amount" />
+                </div>
+                <div class="col-md-1">
+                    <button onclick="Update(@item.BudgetID, @item.CategoryID, $('#Amount-'+@item.CategoryID).val())" class="btn btn-success">Update</button>
+                </div>
+                <div class="col-md-1">
+                    <button onclick="Delete(@item.BudgetID, @item.CategoryID)" class="btn btn-danger">Remove</button>
+                </div>
+            </div>
+            <hr />
+        </div>
+
+    }
 </div>
+

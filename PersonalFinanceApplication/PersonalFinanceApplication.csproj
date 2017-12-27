@@ -276,6 +276,8 @@
     <None Include="Scripts\jquery-3.2.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Scripts\Chart.js" />
+    <Content Include="Scripts\Chart.min.js" />
     <Content Include="Scripts\jquery-3.2.1.js" />
     <Content Include="Scripts\jquery-3.2.1.min.js" />
     <Content Include="Scripts\jquery-3.2.1.slim.js" />
@@ -343,13 +345,13 @@
     <Content Include="Views\Budget\Create.cshtml" />
     <Content Include="Views\Budget\Delete.cshtml" />
     <Content Include="Views\Budget\Details.cshtml" />
-    <Content Include="Views\Budget\Edit.cshtml" />
     <Content Include="Views\Budget\Index.cshtml" />
     <Content Include="Views\BudgetCategories\Create.cshtml" />
     <Content Include="Views\BudgetCategories\Delete.cshtml" />
     <Content Include="Views\BudgetCategories\Details.cshtml" />
     <Content Include="Views\BudgetCategories\Edit.cshtml" />
     <Content Include="Views\BudgetCategories\Index.cshtml" />
+    <Content Include="Views\Budget\Edit.cshtml" />
     <Content Include="Views\Budget\View.cshtml" />
   </ItemGroup>
   <ItemGroup>
