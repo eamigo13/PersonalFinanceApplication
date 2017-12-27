@@ -12,7 +12,8 @@ namespace PersonalFinanceApplication.Models
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Budget()
         {
-            Categories = new HashSet<Category>();
+            BudgetCategories = new HashSet<BudgetCategory>();
+            Goals = new HashSet<Goal>();
         }
 
         public int BudgetID { get; set; }
@@ -21,13 +22,18 @@ namespace PersonalFinanceApplication.Models
         [StringLength(50)]
         public string BudgetName { get; set; }
 
-        public decimal BudgetAmount { get; set; }
+        [StringLength(200)]
+        public string Description { get; set; }
 
-        public int? PeriodID { get; set; }
+        [Required]
+        public DateTime BeginDate { get; set; }
 
-        public virtual BudgetPeriod BudgetPeriod { get; set; }
+        [Required]
+        public DateTime EndDate { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Category> Categories { get; set; }
+        public virtual ICollection<BudgetCategory> BudgetCategories { get; set; }
+
+        public virtual ICollection<Goal> Goals { get; set; }
     }
 }

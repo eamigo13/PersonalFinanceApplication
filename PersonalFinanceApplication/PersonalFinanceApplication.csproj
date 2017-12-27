@@ -217,6 +217,8 @@
     <Compile Include="App_Start\Startup.Auth.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\AccountsController.cs" />
+    <Compile Include="Controllers\BudgetCategoriesController.cs" />
+    <Compile Include="Controllers\BudgetController.cs" />
     <Compile Include="Controllers\CategoriesController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
@@ -232,13 +234,14 @@
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\Batch.cs" />
     <Compile Include="Models\Budget.cs" />
-    <Compile Include="Models\BudgetPeriod.cs" />
+    <Compile Include="Models\BudgetCategory.cs" />
     <Compile Include="Models\Category.cs" />
     <Compile Include="Models\CategoryType.cs" />
     <Compile Include="Models\Column.cs" />
     <Compile Include="Models\ConfirmedTransaction.cs" />
     <Compile Include="Models\FailedRow.cs" />
     <Compile Include="Models\FailedRowError.cs" />
+    <Compile Include="Models\Goal.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\Status.cs" />
@@ -337,6 +340,17 @@
     <Content Include="Views\Transactions\Edit.cshtml" />
     <Content Include="Views\Transactions\Index.cshtml" />
     <Content Include="Views\Transactions\Confirm.cshtml" />
+    <Content Include="Views\Budget\Create.cshtml" />
+    <Content Include="Views\Budget\Delete.cshtml" />
+    <Content Include="Views\Budget\Details.cshtml" />
+    <Content Include="Views\Budget\Edit.cshtml" />
+    <Content Include="Views\Budget\Index.cshtml" />
+    <Content Include="Views\BudgetCategories\Create.cshtml" />
+    <Content Include="Views\BudgetCategories\Delete.cshtml" />
+    <Content Include="Views\BudgetCategories\Details.cshtml" />
+    <Content Include="Views\BudgetCategories\Edit.cshtml" />
+    <Content Include="Views\BudgetCategories\Index.cshtml" />
+    <Content Include="Views\Budget\View.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

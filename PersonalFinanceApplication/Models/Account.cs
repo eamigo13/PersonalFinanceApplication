@@ -13,6 +13,7 @@ namespace PersonalFinanceApplication.Models
         public Account()
         {
             Transactions = new HashSet<Transaction>();
+            Goals = new HashSet<Goal>();
         }
 
         public int AccountID { get; set; }
@@ -27,5 +28,7 @@ namespace PersonalFinanceApplication.Models
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Transaction> Transactions { get; set; }
+
+        public virtual ICollection<Goal> Goals { get; set; }
     }
 }

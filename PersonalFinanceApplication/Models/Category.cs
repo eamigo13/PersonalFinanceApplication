@@ -13,7 +13,7 @@ namespace PersonalFinanceApplication.Models
         public Category()
         {
             Transactions = new HashSet<Transaction>();
-            Budgets = new HashSet<Budget>();
+            BudgetCategories = new HashSet<BudgetCategory>();
             Vendors = new HashSet<Vendor>();
         }
 
@@ -31,7 +31,7 @@ namespace PersonalFinanceApplication.Models
         public virtual ICollection<Transaction> Transactions { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Budget> Budgets { get; set; }
+        public virtual ICollection<BudgetCategory> BudgetCategories { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Vendor> Vendors { get; set; }

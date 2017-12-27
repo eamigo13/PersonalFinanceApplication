@@ -8,12 +8,13 @@ ALTER TABLE [Transaction] DROP CONSTRAINT FK_Transaction_Batch;
 ALTER TABLE [Transaction] DROP CONSTRAINT FK_Transaction_Status;
 ALTER TABLE Account DROP CONSTRAINT FK_Account_AccountType;
 ALTER TABLE Category DROP CONSTRAINT FK_Category_CategoryType;
-ALTER TABLE Budget DROP CONSTRAINT FK_Budget_BudgetPeriod;
 ALTER TABLE BudgetCategory DROP CONSTRAINT FK_BudgetCategory_Budget;
 ALTER TABLE BudgetCategory DROP CONSTRAINT FK_BudgetCategory_Category;
 ALTER TABLE VendorCategory DROP CONSTRAINT FK_VendorCategory_Vendor;
 ALTER TABLE VendorCategory DROP CONSTRAINT FK_VendorCategory_Category;
 ALTER TABLE VendorAbbrev DROP CONSTRAINT FK_VendorAbbrev_Vendor;
+ALTER TABLE Goal DROP CONSTRAINT FK_Goal_Account;
+ALTER TABLE Goal DROP CONSTRAINT FK_Goal_Budget;
 
 GO
 
@@ -25,7 +26,6 @@ GO
 --ALTER TABLE Account DROP CONSTRAINT DFT_Account_AccountTypeID
 
 ALTER TABLE [Transaction] DROP CONSTRAINT UniqueTransaction;
-ALTER TABLE BudgetPeriod DROP CONSTRAINT NoPeriodDuplicate;
 
 DROP TABLE Vendor;
 DROP TABLE AccountType;
@@ -37,9 +37,9 @@ DROP TABLE Account;
 DROP TABLE VendorAbbrev;
 DROP TABLE VendorCategory;
 DROP TABLE [Transaction];
-DROP TABLE BudgetPeriod;
 DROP TABLE Budget;
 DROP TABLE BudgetCategory;
+DROP TABLE Goal;
 
 GO
 
@@ -112,27 +112,22 @@ CREATE TABLE [Transaction] (
   CONSTRAINT UniqueTransaction UNIQUE (Description, Date, Amount)
 );
 
-CREATE TABLE [BudgetPeriod] (
-  [PeriodID] int identity(0,1),
-  [PeriodBegin] date NOT NULL,
-  [PeriodEnd] date NOT NULL,
-  [PeriodName] nvarchar(50) NOT NULL,
-  CONSTRAINT PK_BudgetPeriod PRIMARY KEY ([PeriodID]),
-  CONSTRAINT NoPeriodDuplicate UNIQUE (PeriodBegin, PeriodEnd)
-);
 
 CREATE TABLE [Budget] (
   [BudgetID] int identity(0,1),
   [BudgetName] nvarchar(50) NOT NULL,
-  [BudgetAmount] decimal(18,2) NOT NULL,
-  [PeriodID] int,
+  [Description] nvarchar(200),
+  [BeginDate] date NOT NULL,
+  [EndDate] date NOT NULL,
   CONSTRAINT PK_Budget PRIMARY KEY ([BudgetID]),
-  CONSTRAINT FK_Budget_BudgetPeriod FOREIGN KEY (PeriodID) REFERENCES BudgetPeriod(PeriodID)
 );
 
 CREATE TABLE [BudgetCategory] (
-  [BudgetID] int ,
+  [BudgetID] int,
   [CategoryID] int,
+  [Amount] decimal(18,2),
+  [UsedAmount] decimal(18,2),
+  [RemainingAmount] decimal(18,2),
   PRIMARY KEY ([BudgetID], CategoryID),
   CONSTRAINT FK_BudgetCategory_Budget FOREIGN KEY (BudgetID) REFERENCES Budget(BudgetID),
   CONSTRAINT FK_BudgetCategory_Category FOREIGN KEY (CategoryID) REFERENCES Category(CategoryID)
@@ -153,6 +148,18 @@ CREATE TABLE [VendorAbbrev] (
   [Abbrev] nvarchar(50) NOT NULL,
   CONSTRAINT PK_VendorAbbrev PRIMARY KEY ([AbbrevID]),
   CONSTRAINT FK_VendorAbbrev_Vendor FOREIGN KEY (VendorID) REFERENCES Vendor(VendorID)
+);
+
+CREATE TABLE [Goal] (
+   [GoalID] int identity(1,1),
+   [AccountID] int,
+   [BudgetID] int,
+   [Description] nvarchar(200),
+   [BeginningAmount] decimal(18,2),
+   [GoalAmount] decimal(18,2),
+   CONSTRAINT PK_Goal PRIMARY KEY ([GoalID]),
+   CONSTRAINT FK_Goal_Account FOREIGN KEY (AccountID) REFERENCES Account(AccountID),
+   CONSTRAINT FK_Goal_Budget FOREIGN KEY (BudgetID) REFERENCES Budget(BudgetID)
 );
 
 INSERT INTO Status VALUES
