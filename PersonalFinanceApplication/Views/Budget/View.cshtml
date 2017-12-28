@@ -24,6 +24,9 @@
     }
 
     $(document).ready(function () {
+        //Add all transactions when the page initially opens as well as the alltransaction donut chart
+        showRelatedTransactions("All");
+        createDonutChart("All");
 
         //This converts all the category names passed from the server into a json object
         var labels = @Html.Raw(Json.Encode(ViewBag.categoryNames));

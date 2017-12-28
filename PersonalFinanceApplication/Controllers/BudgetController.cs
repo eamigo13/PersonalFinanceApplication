@@ -118,8 +118,8 @@ namespace PersonalFinanceApplication.Controllers
             //var totalamountquery = @"";
 
             var otherAmount = 100;
-            
-            
+
+
             //Save the changes to each budgetcategory row to the database
             foreach (var bc in budgetcategories)
             {
@@ -135,22 +135,26 @@ namespace PersonalFinanceApplication.Controllers
             var categoryTransactionDictionary = new Dictionary<string, SimpleTransaction[]>();
 
             //Get all transactions between the begin date and end date of the budget
-            var allBudgetTransactionss = db.Transactions.Where(t => t.Date >= budget.BeginDate && t.Date <= budget.EndDate).ToArray();
-
             var allBudgetTransactions = (from t in new FinanceContext().Transactions
                                          where t.Date >= budget.BeginDate && t.Date <= budget.EndDate
                                          select new SimpleTransaction { TransactionID = t.TransactionID,
-                                                                        CategoryID = t.CategoryID,
-                                                                        Date = t.Date,
-                                                                        Description = t.Description,
-                                                                        Amount = t.Amount}).ToArray();
+                                             CategoryID = t.CategoryID,
+                                             Date = t.Date,
+                                             Description = t.Description,
+                                             Amount = t.Amount }).ToArray();
 
-            foreach(var item in allBudgetTransactions)
+            foreach (var item in allBudgetTransactions)
             {
                 item.DateString = item.Date.ToShortDateString();
             }
 
+            var totalAmountBudgeted = budgetcategories.Sum(c => c.Amount);
+            var totalAmountUsed = allBudgetTransactions.Sum(t => t.Amount);
+            var totalAmountRemaining = totalAmountBudgeted - totalAmountUsed;
+
             categoryTransactionDictionary.Add("All", allBudgetTransactions);
+            decimal[] allusedremaining = { totalAmountUsed, totalAmountRemaining };
+            nameAmountsDictionary.Add("All", allusedremaining );
 
             usedAmounts[0] = otherAmount;
             categoryNames[0] = "Other";
