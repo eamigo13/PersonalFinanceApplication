@@ -11,113 +11,120 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
 
+<script>
+
+    //This function generates a random hex color and is used to randomly color different slices of the pie chart
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF'.split('');
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+    $(document).ready(function () {
+
+        //This converts all the category names passed from the server into a json object
+        var labels = @Html.Raw(Json.Encode(ViewBag.categoryNames));
+
+        //Convert all the 'used amounts' passed from the server into a json object
+        var values = @Html.Raw(Json.Encode(ViewBag.usedAmounts));
+
+        //Create an array of random colors the same size as the number of categories in the budget
+        var colors = [];
+        for (i = 0; i < 6; i++) {
+            colors.push(getRandomColor());
+        }
+
+        //Add the values, labels, and colors into a data object to be used by the piechart
+        var data = {
+            labels: labels,
+            datasets: [{
+                data: values,
+                backgroundColor: colors
+            }]
+        };
+
+        //create the elements necessary to create a pie chart on on the 'piecanvas' div
+        var canvas = document.getElementById("piecanvas");
+        var ctx = canvas.getContext("2d");
+        var myNewChart = new Chart(ctx, {
+            type: 'pie',
+            data: data,
+            options: {
+                title: {
+                    display: true,
+                    text: 'Expenditures by Category'
+                }
+            }
+        });
+
+        /*When a pie slice is clicked, pass the name of the category to the create donut chart
+        function in order to create a donut chart of the used and remaining amounts for that category */
+        canvas.onclick = function (evt) {
+            var activePoints = myNewChart.getElementsAtEvent(evt);
+            if (activePoints[0]) {
+                var chartData = activePoints[0]['_chart'].config.data;
+                var idx = activePoints[0]['_index'];
+
+                var label = chartData.labels[idx];
+                //var value = chartData.datasets[0].data[idx];
+                //alert(url);
+                createDonutChart(label);
+            }
+        };
+
+        //cname = Category Name
+        function createDonutChart(cname)
+        {
+            //Delete the previous donut canvas and append a new canvas to the same div
+            $('#donutcanvas').remove();
+            $('#donutdiv').append('<canvas id="donutcanvas"></canvas>');
+
+            //Convert the nameAmountsDictionary in the viewbag to a json object
+            var nameAmountsDictionary = @Html.Raw(Json.Encode(ViewBag.nameAmountsDictionary));
+
+            //Create the labels for the donut chart
+            var donutlabels = ["Used", "Remaining"];
+
+            //Get the values for the donut chart from the dictionary
+            var donutvalues = nameAmountsDictionary[cname];
+
+            //Colors for the donut chart
+            var donutcolors = ["#9d9fa0", "#37a848"]; //gray for unused and green for used
+
+            //create the elements necessary to create a donut chart on on the 'donutcanvas' div
+            var donutcanvas = document.getElementById("donutcanvas");
+            var donutctx = donutcanvas.getContext('2d');
+            var myChart = new Chart(donutctx, {
+                type: 'doughnut',
+                data: {
+                    labels: donutlabels,
+                    datasets: [{
+                        data: donutvalues,
+                        backgroundColor: donutcolors
+                    }]
+                }
+            });
+        }
+
+    })
+
+</script>
 <br />
 <br />
 
 <div class="row">
     <div class = "col-md-6">
-        <canvas id="TotalExpendituresPieChart"></canvas>
-        <script>
-
-            function getRandomColor() {
-                var letters = '0123456789ABCDEF'.split('');
-                var color = '#';
-                for (var i = 0; i < 6; i++) {
-                    color += letters[Math.floor(Math.random() * 16)];
-                }
-                return color;
-            }
-
-            var labels = @Html.Raw(Json.Encode(ViewBag.categoryNames));//['a', 'b', 'c', 'd', 'e', 'f'];
-            var values = @Html.Raw(Json.Encode(ViewBag.usedAmounts));//[2, 3, 4, 5, 4, 3];
-            var colors = [];
-            for (i = 0; i < 6; i++) {
-                colors.push(getRandomColor());
-            }
-
-            var ctx = document.getElementById("TotalExpendituresPieChart").getContext('2d');
-            var myChart = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: colors
-                    }]
-                }
-            });
-        </script>
+        <canvas id="piecanvas"></canvas>
     </div>
-
-    <div class="col-md-6">
-        <canvas id="UsedRemainingDoughnutChart"></canvas>
-        <script>
-
-            function getRandomColor() {
-                var letters = '0123456789ABCDEF'.split('');
-                var color = '#';
-                for (var i = 0; i < 6; i++) {
-                    color += letters[Math.floor(Math.random() * 16)];
-                }
-                return color;
-            }
-
-            var labels = ["Used", "Remaining"];//['a', 'b', 'c', 'd', 'e', 'f'];
-            var values = @Html.Raw(Json.Encode(ViewBag.nameAmountsDictionary["Groceries"]));//[2, 3, 4, 5, 4, 3];
-            var colors = [];
-            for (i = 0; i < 6; i++) {
-                colors.push(getRandomColor());
-            }
-
-            var ctx = document.getElementById("UsedRemainingDoughnutChart").getContext('2d');
-            var myChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: colors
-                    }]
-                }
-            });
-        </script>
+    <div id="donutdiv" class="col-md-6">
+        <canvas id="donutcanvas"></canvas>
     </div>
 </div>
 
-@*@for (int i = 0; i < list.Count; i++)
-{
-    //Create a new bootstrap row every four rows
-    if (i % 3 == 0)
-    {
-        @:<div class="row">
-    }
 
-    <div class="col-md-4">
-        <canvas id="myChart-@list[i].CategoryID"></canvas>
-        <script>
-            var ctx = document.getElementById("myChart-@list[i].CategoryID").getContext('2d');
-            var myChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ["Used", "Remaining"],
-                    datasets: [{
-                        backgroundColor: [
-                            "#e74c3c",
-                            "#95a5a6"
-                        ],
-                        data: [@list[i].UsedAmount, @list[i].RemainingAmount]
-                    }]
-                }
-            });
-        </script>
-    </div>
-
-    //End the bootstrap row every four rows.
-    if ((i + 1) % 3 == 0 || (i + 1) == list.Count)
-    {
-        @:</div>
-    }
-}*@
 
 
 
