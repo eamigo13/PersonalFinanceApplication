@@ -95,17 +95,17 @@ namespace PersonalFinanceApplication.Controllers
             //Add the budget to the viewbag
             ViewBag.budget = budget;
 
-            //Return all BudgetCategory rows associated with the budget
+            //Return all BudgetCategory rows associated with the budget.  The following SQL updates the used amount and remaining amount
             var categoryquery = @"  select 
 	                                    bc.BudgetID,
 	                                    bc.CategoryID,
 	                                    bc.Amount,
-	                                    isnull(( select sum(t.Amount) from [Transaction] t
+	                                    isnull(( select (sum(t.Amount)*-1) from [Transaction] t
 	                                      where t.CategoryID = bc.CategoryID 
 	                                      and t.Date 
 		                                    between (select b.BeginDate from Budget b where b.BudgetID = bc.BudgetID) 
 		                                    and (select b.EndDate from Budget b where b.BudgetID = bc.BudgetID) ), 0 ) as UsedAmount,
-	                                    (bc.Amount - isnull(( select sum(t.Amount) from [Transaction] t
+	                                    (bc.Amount - isnull(( select (sum(t.Amount) * -1) from [Transaction] t
 	                                      where t.CategoryID = bc.CategoryID 
 	                                      and t.Date 
 		                                    between (select b.BeginDate from Budget b where b.BudgetID = bc.BudgetID) 
@@ -114,14 +114,13 @@ namespace PersonalFinanceApplication.Controllers
                                     from BudgetCategory bc
                                     where bc.BudgetID =" + id;
 
+            var budgetcategories = db.Database.SqlQuery<BudgetCategory>(categoryquery).ToList();
             //var totalamountquery = @"";
 
             var otherAmount = 100;
-
             
-
-            var budgetcategories = db.Database.SqlQuery<BudgetCategory>(categoryquery).ToList();
-
+            
+            //Save the changes to each budgetcategory row to the database
             foreach (var bc in budgetcategories)
             {
                 db.Entry(bc).State = EntityState.Modified;
@@ -133,23 +132,46 @@ namespace PersonalFinanceApplication.Controllers
             var usedAmounts = new decimal[budgetcategories.Count() + 1]; //used amounts for each budget category plus one for 'other' used amount
             var categoryNames = new string[budgetcategories.Count() + 1]; //category name for each budget category plus one for 'other' 
             var nameAmountsDictionary = new Dictionary<string, decimal[]>();
+            var categoryTransactionDictionary = new Dictionary<string, SimpleTransaction[]>();
+
+            //Get all transactions between the begin date and end date of the budget
+            var allBudgetTransactionss = db.Transactions.Where(t => t.Date >= budget.BeginDate && t.Date <= budget.EndDate).ToArray();
+
+            var allBudgetTransactions = (from t in new FinanceContext().Transactions
+                                         where t.Date >= budget.BeginDate && t.Date <= budget.EndDate
+                                         select new SimpleTransaction { TransactionID = t.TransactionID,
+                                                                        CategoryID = t.CategoryID,
+                                                                        Date = t.Date,
+                                                                        Description = t.Description,
+                                                                        Amount = t.Amount}).ToArray();
+
+            foreach(var item in allBudgetTransactions)
+            {
+                item.DateString = item.Date.ToShortDateString();
+            }
+
+            categoryTransactionDictionary.Add("All", allBudgetTransactions);
 
             usedAmounts[0] = otherAmount;
             categoryNames[0] = "Other";
 
             for (int i = 1; i < budgetcategories.Count() + 1; i++)
             {
-                usedAmounts[i] = (budgetcategories[i - 1].UsedAmount) * -1;
+                usedAmounts[i] = (budgetcategories[i - 1].UsedAmount);
                 categoryNames[i] = budgetcategories[i - 1].Category.CategoryName;
 
                 decimal[] usedremaining = { budgetcategories[i - 1].UsedAmount, budgetcategories[i - 1].RemainingAmount };
                 nameAmountsDictionary.Add(budgetcategories[i - 1].Category.CategoryName, usedremaining);
+
+                var categoryTransations = allBudgetTransactions.Where(t => t.CategoryID == budgetcategories[i - 1].CategoryID).ToArray();
+                categoryTransactionDictionary.Add(budgetcategories[i - 1].Category.CategoryName, categoryTransations);
+
             }
 
             ViewBag.usedAmounts = usedAmounts;
             ViewBag.categoryNames = categoryNames;
             ViewBag.nameAmountsDictionary = nameAmountsDictionary;
-
+            ViewBag.categoryTransactionDictionary = categoryTransactionDictionary;
 
             //var budgetcategories = db.BudgetCategories.Where(b => b.BudgetID == id).ToList();
 

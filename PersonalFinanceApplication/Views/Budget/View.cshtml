@@ -72,6 +72,7 @@
                 //var value = chartData.datasets[0].data[idx];
                 //alert(url);
                 createDonutChart(label);
+                showRelatedTransactions(label);
             }
         };
 
@@ -109,6 +110,22 @@
             });
         }
 
+        function showRelatedTransactions(cname)
+        {
+            var transactionsdiv = document.getElementById("transactionsdiv");
+            transactionsdiv.innerHTML = '';
+
+            var categoryTransactionDictionary = @Html.Raw(Json.Encode(ViewBag.categoryTransactionDictionary));
+            
+
+            var transactions = categoryTransactionDictionary[cname];
+
+            for (i = 0; i < transactions.length; i++) {
+                var html = "<hr /> <div class=\"row\"><div class=\"col-md-2\"><p>" + transactions[i].DateString + "</p></div><div class=\"col-md-4\"><p>" + transactions[i].Description + "</p></div><div class=\"col-md-2\"><p>" + transactions[i].Amount + "</p></div></div>";
+                $('#transactionsdiv').append(html);
+            }
+        }
+
     })
 
 </script>
@@ -122,6 +139,22 @@
     <div id="donutdiv" class="col-md-6">
         <canvas id="donutcanvas"></canvas>
     </div>
+</div>
+
+<hr />
+<div class="row">
+    <div class="col-md-2">
+        <strong>Date</strong>
+    </div>
+    <div class="col-md-4">
+        <strong>Description</strong>
+    </div>
+    <div class="col-md-2">
+        <strong>Amount</strong>
+    </div>
+</div>
+
+<div id="transactionsdiv">
 </div>
 
 
