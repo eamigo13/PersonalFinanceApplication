@@ -128,7 +128,7 @@ CREATE TABLE [BudgetCategory] (
   [Amount] decimal(18,2),
   [UsedAmount] decimal(18,2),
   [RemainingAmount] decimal(18,2),
-  PRIMARY KEY ([BudgetID], CategoryID),
+  PRIMARY KEY ([BudgetID], [CategoryID]),
   CONSTRAINT FK_BudgetCategory_Budget FOREIGN KEY (BudgetID) REFERENCES Budget(BudgetID),
   CONSTRAINT FK_BudgetCategory_Category FOREIGN KEY (CategoryID) REFERENCES Category(CategoryID)
 );

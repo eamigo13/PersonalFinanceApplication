@@ -96,25 +96,31 @@ namespace PersonalFinanceApplication.Controllers
             ViewBag.budget = budget;
 
             //Return all BudgetCategory rows associated with the budget
-            var query = @"  select 
-	                            bc.BudgetID,
-	                            bc.CategoryID,
-	                            bc.Amount,
-	                            isnull(( select sum(t.Amount) from [Transaction] t
-	                              where t.CategoryID = bc.CategoryID 
-	                              and t.Date 
-		                            between (select b.BeginDate from Budget b where b.BudgetID = bc.BudgetID) 
-		                            and (select b.EndDate from Budget b where b.BudgetID = bc.BudgetID) ), 0 ) as UsedAmount,
-	                            (bc.Amount - isnull(( select sum(t.Amount) from [Transaction] t
-	                              where t.CategoryID = bc.CategoryID 
-	                              and t.Date 
-		                            between (select b.BeginDate from Budget b where b.BudgetID = bc.BudgetID) 
-		                            and (select b.EndDate from Budget b where b.BudgetID = bc.BudgetID) ), 0 ) ) as RemainingAmount
+            var categoryquery = @"  select 
+	                                    bc.BudgetID,
+	                                    bc.CategoryID,
+	                                    bc.Amount,
+	                                    isnull(( select sum(t.Amount) from [Transaction] t
+	                                      where t.CategoryID = bc.CategoryID 
+	                                      and t.Date 
+		                                    between (select b.BeginDate from Budget b where b.BudgetID = bc.BudgetID) 
+		                                    and (select b.EndDate from Budget b where b.BudgetID = bc.BudgetID) ), 0 ) as UsedAmount,
+	                                    (bc.Amount - isnull(( select sum(t.Amount) from [Transaction] t
+	                                      where t.CategoryID = bc.CategoryID 
+	                                      and t.Date 
+		                                    between (select b.BeginDate from Budget b where b.BudgetID = bc.BudgetID) 
+		                                    and (select b.EndDate from Budget b where b.BudgetID = bc.BudgetID) ), 0 ) ) as RemainingAmount
 	
-                            from BudgetCategory bc
-                            where bc.BudgetID =" + id;
+                                    from BudgetCategory bc
+                                    where bc.BudgetID =" + id;
 
-            var budgetcategories = db.Database.SqlQuery<BudgetCategory>(query).ToList();
+            //var totalamountquery = @"";
+
+            var otherAmount = 100;
+
+            
+
+            var budgetcategories = db.Database.SqlQuery<BudgetCategory>(categoryquery).ToList();
 
             foreach (var bc in budgetcategories)
             {
@@ -122,6 +128,28 @@ namespace PersonalFinanceApplication.Controllers
             }
 
             db.SaveChanges();
+
+            //Add all the used amounts to the viewbag
+            var usedAmounts = new decimal[budgetcategories.Count() + 1]; //used amounts for each budget category plus one for 'other' used amount
+            var categoryNames = new string[budgetcategories.Count() + 1]; //category name for each budget category plus one for 'other' 
+            var nameAmountsDictionary = new Dictionary<string, decimal[]>();
+
+            usedAmounts[0] = otherAmount;
+            categoryNames[0] = "Other";
+
+            for (int i = 1; i < budgetcategories.Count() + 1; i++)
+            {
+                usedAmounts[i] = (budgetcategories[i - 1].UsedAmount) * -1;
+                categoryNames[i] = budgetcategories[i - 1].Category.CategoryName;
+
+                decimal[] usedremaining = { budgetcategories[i - 1].UsedAmount, budgetcategories[i - 1].RemainingAmount };
+                nameAmountsDictionary.Add(budgetcategories[i - 1].Category.CategoryName, usedremaining);
+            }
+
+            ViewBag.usedAmounts = usedAmounts;
+            ViewBag.categoryNames = categoryNames;
+            ViewBag.nameAmountsDictionary = nameAmountsDictionary;
+
 
             //var budgetcategories = db.BudgetCategories.Where(b => b.BudgetID == id).ToList();
 
