@@ -23,6 +23,62 @@
         return color;
     }
 
+    //cname = Category Name
+    function createDonutChart(cname)
+    {
+        //Delete the previous donut canvas and append a new canvas to the same div
+        $('#donutcanvas').remove();
+        $('#donutdiv').append('<canvas id="donutcanvas"></canvas>');
+        $('#donuttitle').text('Remaining Budget: ' + cname);
+
+        //Convert the nameAmountsDictionary in the viewbag to a json object
+        var nameAmountsDictionary = @Html.Raw(Json.Encode(ViewBag.nameAmountsDictionary));
+
+        //Create the labels for the donut chart
+        var donutlabels = ["Used", "Remaining"];
+
+        //Get the values for the donut chart from the dictionary
+        var donutvalues = nameAmountsDictionary[cname];
+
+        //Colors for the donut chart
+        var donutcolors = ["#9d9fa0", "#37a848"]; //gray for unused and green for used
+
+        //create the elements necessary to create a donut chart on on the 'donutcanvas' div
+        var donutcanvas = document.getElementById("donutcanvas");
+        var donutctx = donutcanvas.getContext('2d');
+        var myChart = new Chart(donutctx, {
+            type: 'doughnut',
+            data: {
+                labels: donutlabels,
+                datasets: [{
+                    data: donutvalues,
+                    backgroundColor: donutcolors
+                }]
+            }
+        });
+    }
+
+    function showRelatedTransactions(cname)
+    {
+        var transactionsdiv = document.getElementById("transactionsdiv");
+        transactionsdiv.innerHTML = '';
+
+        var categoryTransactionDictionary = @Html.Raw(Json.Encode(ViewBag.categoryTransactionDictionary));
+
+
+        var transactions = categoryTransactionDictionary[cname];
+
+        for (i = 0; i < transactions.length; i++) {
+            var html = "<hr /> <div class=\"row\"><div class=\"col-md-2\"><p>" + transactions[i].DateString + "</p></div><div class=\"col-md-4\"><p>" + transactions[i].Description + "</p></div><div class=\"col-md-2\"><p>" + transactions[i].Amount + "</p></div><div class=\"col-md-2\"><p>" + transactions[i].CategoryName + "</p></div></div>";
+            $('#transactionsdiv').append(html);
+        }
+    }
+
+    function showAll() {
+        showRelatedTransactions("All");
+        createDonutChart("All");
+    }
+
     $(document).ready(function () {
         //Add all transactions when the page initially opens as well as the alltransaction donut chart
         showRelatedTransactions("All");
@@ -55,12 +111,6 @@
         var myNewChart = new Chart(ctx, {
             type: 'pie',
             data: data,
-            options: {
-                title: {
-                    display: true,
-                    text: 'Expenditures by Category'
-                }
-            }
         });
 
         /*When a pie slice is clicked, pass the name of the category to the create donut chart
@@ -79,55 +129,7 @@
             }
         };
 
-        //cname = Category Name
-        function createDonutChart(cname)
-        {
-            //Delete the previous donut canvas and append a new canvas to the same div
-            $('#donutcanvas').remove();
-            $('#donutdiv').append('<canvas id="donutcanvas"></canvas>');
 
-            //Convert the nameAmountsDictionary in the viewbag to a json object
-            var nameAmountsDictionary = @Html.Raw(Json.Encode(ViewBag.nameAmountsDictionary));
-
-            //Create the labels for the donut chart
-            var donutlabels = ["Used", "Remaining"];
-
-            //Get the values for the donut chart from the dictionary
-            var donutvalues = nameAmountsDictionary[cname];
-
-            //Colors for the donut chart
-            var donutcolors = ["#9d9fa0", "#37a848"]; //gray for unused and green for used
-
-            //create the elements necessary to create a donut chart on on the 'donutcanvas' div
-            var donutcanvas = document.getElementById("donutcanvas");
-            var donutctx = donutcanvas.getContext('2d');
-            var myChart = new Chart(donutctx, {
-                type: 'doughnut',
-                data: {
-                    labels: donutlabels,
-                    datasets: [{
-                        data: donutvalues,
-                        backgroundColor: donutcolors
-                    }]
-                }
-            });
-        }
-
-        function showRelatedTransactions(cname)
-        {
-            var transactionsdiv = document.getElementById("transactionsdiv");
-            transactionsdiv.innerHTML = '';
-
-            var categoryTransactionDictionary = @Html.Raw(Json.Encode(ViewBag.categoryTransactionDictionary));
-            
-
-            var transactions = categoryTransactionDictionary[cname];
-
-            for (i = 0; i < transactions.length; i++) {
-                var html = "<hr /> <div class=\"row\"><div class=\"col-md-2\"><p>" + transactions[i].DateString + "</p></div><div class=\"col-md-4\"><p>" + transactions[i].Description + "</p></div><div class=\"col-md-2\"><p>" + transactions[i].Amount + "</p></div></div>";
-                $('#transactionsdiv').append(html);
-            }
-        }
 
     })
 
@@ -137,9 +139,11 @@
 
 <div class="row">
     <div class = "col-md-6">
+        <h3 style="text-align: center">Expenditures by Category</h3>
         <canvas id="piecanvas"></canvas>
     </div>
     <div id="donutdiv" class="col-md-6">
+        <h3 id="donuttitle" style="text-align: center"></h3>
         <canvas id="donutcanvas"></canvas>
     </div>
 </div>
@@ -154,6 +158,12 @@
     </div>
     <div class="col-md-2">
         <strong>Amount</strong>
+    </div>
+    <div class="col-md-2">
+        <strong>Category</strong>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-success" onclick="showAll()">Show All Categories</button>
     </div>
 </div>
 

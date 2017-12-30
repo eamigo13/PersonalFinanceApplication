@@ -39,7 +39,7 @@ namespace PersonalFinanceApplication.Models
 
         public int? VendorID { get; set; }
 
-        public int? CategoryID { get; set; }
+        public int CategoryID { get; set; }
 
         public int? BatchID { get; set; }
 

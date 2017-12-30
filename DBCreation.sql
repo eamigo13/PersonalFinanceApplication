@@ -26,6 +26,8 @@ GO
 --ALTER TABLE Account DROP CONSTRAINT DFT_Account_AccountTypeID
 
 ALTER TABLE [Transaction] DROP CONSTRAINT UniqueTransaction;
+ALTER TABLE Category DROP CONSTRAINT UniqueCategory;
+ALTER TABLE Vendor DROP CONSTRAINT UniqueVendor;
 
 DROP TABLE Vendor;
 DROP TABLE AccountType;
@@ -47,7 +49,8 @@ CREATE TABLE [Vendor] (
   [VendorID] int identity(0,1),
   [VendorName] nvarchar(50) NOT NULL,
   [VendorNotes] nvarchar(200),
-  CONSTRAINT PK_Vendor PRIMARY KEY ([VendorID])
+  CONSTRAINT PK_Vendor PRIMARY KEY ([VendorID]),
+  CONSTRAINT UniqueVendor UNIQUE (VendorName)
 );
 
 CREATE TABLE [AccountType] (
@@ -60,6 +63,9 @@ CREATE TABLE [Account] (
   [AccountID] int identity(0,1),
   [AccountName] nvarchar(50) NOT NULL,
   [AccountTypeID] int,
+  [DateColumn] int,
+  [DescriptionColumn] int,
+  [AmountColumn] int,
   CONSTRAINT PK_Account PRIMARY KEY ([AccountID]),
   CONSTRAINT FK_Account_AccountType FOREIGN KEY (AccountTypeID) REFERENCES AccountType(AccountTypeID)
 )
@@ -75,7 +81,8 @@ CREATE TABLE [Category] (
   [CategoryName] nvarchar(50) NOT NULL,
   [CategoryTypeID] int,
   CONSTRAINT PK_Category PRIMARY KEY ([CategoryID]),
-  CONSTRAINT FK_Category_CategoryType FOREIGN KEY (CategoryTypeID) REFERENCES CategoryType(CategoryTypeID)
+  CONSTRAINT FK_Category_CategoryType FOREIGN KEY (CategoryTypeID) REFERENCES CategoryType(CategoryTypeID),
+  CONSTRAINT UniqueCategory UNIQUE (CategoryName)
 );
 
 CREATE TABLE Batch (
@@ -174,7 +181,7 @@ INSERT INTO AccountType VALUES
 ('Credit Card'),
 ('Money Market');
 
-INSERT INTO Account VALUES
+INSERT INTO Account(AccountName,AccountTypeID) VALUES
 ('Unknown', 0),
 ('R&E USAA Visa', 4),
 ('R&E USAA Checking', 1),
@@ -187,15 +194,34 @@ INSERT INTO CategoryType VALUES
 ('Transportation'),
 ('Education'),
 ('Gifts'),
-('Home');
+('Home')
+;
 
-INSERT INTO Category VALUES
-('Unknown', 0),
-('Groceries', 1),
-('Dining', 1),
-('Gas', 2),
-('Hyundai Maintenance', 2),
-('Christmas Gifts', 4);
+INSERT INTO Category(CategoryName) VALUES
+('Unknown'),
+('Groceries'),
+('Dining'),
+('Gas'),
+('Hyundai Maintenance'),
+('Christmas Gifts'),
+('General Merchandise'),
+('Recreation'),
+('Parking'),
+('Service'),
+('Gifts'),
+('Cell Phone'),
+('Education'),
+('Insurance'),
+('Fines/Fees'),
+('Tithes/Offerings'),
+('Clothing'),
+('Entertainment'),
+('Travel'),
+('Rent'),
+('Account Transfer'),
+('Income')
+
+;
 
 INSERT INTO Vendor(VendorName) VALUES
 ('Unknown'),
@@ -203,9 +229,126 @@ INSERT INTO Vendor(VendorName) VALUES
 ('Target'),
 ('Amazon'),
 ('Shell'),
-('Winco');
+('Winco'),
+('Brick Oven'),
+('Taqueria El Vaquero'),
+('Wendys'),
+('Little Caesars'),
+('7-Eleven'),
+('Saigon Cafe'),
+('Cougar Express'),
+('Dennys'),
+('Mcdonald'),
+('Subway'),
+('Five Guys'),
+('Wild Ginger'),
+('Emanuels Fresh Grill'),
+('Byu Creamery On Ninth'),
+('Chicks Cafe'),
+('Rancheritos'),
+('Cafe Rio'),
+('In-N-Out'),
+('Smashburger'),
+('Zupas'),
+('Moochies'),
+('Pizza Pie'),
+('Dairy Queen'),
+('Costa Vida'),
+('Malt Shoppe'),
+('Sonny Boys Bbq'),
+('Zaxbys'),
+('Zeeks'),
+('Savannahs Candy Kitchen'),
+('Applebees'),
+('Tucanos'),
+('Papa Johns'),
+('Rodizio'),
+('JCWs'),
+('Kneaders'),
+('Balance Rock Eatery'),
+('Chick-Fil-A'),
+('Taco Amigo'),
+('Vending'),
+('Saturdays Waffle'),
+('Bom Acai'),
+('The Mighty Bake'),
+('Del Taco'),
+('Sodalicious'),
+('Coca Cola'),
+('Swig'),
+('Arbys'),
+('Baskin'),
+('Betos'),
+('Taqueria 27'),
+('Sushi Burrito'),
+('Cream'),
+('Einstein Bros Bagels'),
+('Barneys'),
+('Berkeley Thai House'),
+('Maverik'),
+('Chevron'),
+('Phillips 66'),
+('Last Chance Store'),
+('Harts'),
+('Texaco'),
+('Sinclair'),
+('Mountainland One Stop'),
+('Hollow Mountain'),
+('Fast Gas'),
+('Maceys'),
+('CVS'),
+('Smiths'),
+('Dollar Tree'),
+('Days Market'),
+('Kroger'),
+('Trader Joes'),
+('La Pequenita Market'),
+('Wawa'),
+('Dans Food'),
+('South End Market'),
+('Ridleys'),
+('Us Mobile'),
+('Project Fi'),
+('Boondocks'),
+('Miracle Bowl'),
+('Jack And Jill Lanes'),
+('Groupon'),
+('Megaplex'),
+('Vidangel'),
+('Cinemark'),
+('Google Play'),
+('Youtube Videos '),
+('Autozone'),
+('Safelite'),
+('Jims Auto Accessories'),
+('Utah DMV'),
+('Murdock Hyundai'),
+('Grease Monkey'),
+('Jiffy Lube'),
+('Vail Resorts'),
+('Zion Mountain Ranch'),
+('Mad Dog'),
+('Recreation Outlet'),
+('Utah Paddle Board'),
+('Utah State Parks'),
+('Orem Ultimate'),
+('Sundance'),
+('Zion National Park'),
+('Hang Time'),
+('The Quarry'),
+('Timpanogos Cyclery'),
+('Hobby Lobby'),
+('Best Buy'),
+('Stewarts Ace Hardware'),
+('Home Depot'),
+('Sports Authority'),
+('Ross'),
+('Lehi Factory Store'),
+('H&M'),
+('REI')
+;
 
-INSERT INTO VendorCategory VALUES
+INSERT INTO VendorCategory(VendorID,CategoryID,TransactionCount) VALUES
 (5, 1, 10),
 (3, 5, 4),
 (1, 1, 3),
