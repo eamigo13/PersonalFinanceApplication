@@ -235,6 +235,7 @@
     <Compile Include="Models\Batch.cs" />
     <Compile Include="Models\Budget.cs" />
     <Compile Include="Models\BudgetCategory.cs" />
+    <Compile Include="Models\BudgetSummary.cs" />
     <Compile Include="Models\Category.cs" />
     <Compile Include="Models\CategoryType.cs" />
     <Compile Include="Models\Column.cs" />

@@ -37,6 +37,9 @@ namespace PersonalFinanceApplication.Controllers
             //Add the budget to the viewbag
             ViewBag.budget = budget;
 
+            //Add all the goals associated with the budget to the viewbag
+            ViewBag.Goals = db.Goals.Where(g => g.BudgetID == id);
+
             //Return all BudgetCategory rows associated with the budget
             var query = @"  select 
 	                            bc.BudgetID,
@@ -245,6 +248,44 @@ namespace PersonalFinanceApplication.Controllers
             return Json(budgetcategory);
         }
 
+        [HttpPost]
+        public JsonResult AddGoal(Goal goal)
+        {
+            db.Goals.Add(goal);
+            db.SaveChanges();
+            return Json(goal.GoalID);
+        }
+
+        [HttpPost]
+        public JsonResult UpdateGoal(Goal goal)
+        {
+            db.Entry(goal).State = EntityState.Modified;
+            db.SaveChanges();
+            return Json(goal);
+        }
+
+        [HttpPost]
+        public JsonResult DeleteGoal(Goal goal)
+        {
+            var deletedgoal = db.Goals.Find(goal.GoalID);
+            db.Goals.Remove(deletedgoal);
+            db.SaveChanges();
+            return Json(deletedgoal);
+        }
+
+        [HttpPost]
+        public JsonResult GetBudgetSummary(Budget budget)
+        {
+            var budgetsummary = new BudgetSummary();
+
+            budgetsummary.ExpectedIncome = db.Budgets.Find(budget.BudgetID).ExpectedIncome;
+            budgetsummary.Expenditures = db.BudgetCategories.Where(bc => bc.BudgetID == budget.BudgetID).Sum(bc => bc.Amount);
+            budgetsummary.Goals = db.Goals.Where(g => g.BudgetID == budget.BudgetID).Sum(g => g.GoalAmount);
+            budgetsummary.Remaining = budgetsummary.ExpectedIncome - budgetsummary.Expenditures - budgetsummary.Goals;
+
+            return Json(budgetsummary);
+        }
+
         // GET: Budgets/Details/5
         public ActionResult Details(int? id)
         {
@@ -283,36 +324,6 @@ namespace PersonalFinanceApplication.Controllers
             return View(budget);
         }
 
-        //// GET: Budgets/Edit/5
-        //public ActionResult Edit(int? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-        //    }
-        //    Budget budget = db.Budgets.Find(id);
-        //    if (budget == null)
-        //    {
-        //        return HttpNotFound();
-        //    }
-        //    return View(budget);
-        //}
-
-        //// POST: Budgets/Edit/5
-        //// To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        //// more details see https://go.microsoft.com/fwlink/?LinkId=317598.
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public ActionResult Edit([Bind(Include = "BudgetID,BudgetName,Description,BeginDate,EndDate")] Budget budget)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        db.Entry(budget).State = EntityState.Modified;
-        //        db.SaveChanges();
-        //        return RedirectToAction("Index");
-        //    }
-        //    return View(budget);
-        //}
 
         // GET: Budgets/Delete/5
         public ActionResult Delete(int? id)

@@ -159,10 +159,12 @@ CREATE TABLE [VendorAbbrev] (
 
 CREATE TABLE [Goal] (
    [GoalID] int identity(1,1),
+   [GoalName] nvarchar(50),
    [AccountID] int,
    [BudgetID] int,
    [Description] nvarchar(200),
    [BeginningAmount] decimal(18,2),
+   [EndAmount] decimal(18,2),
    [GoalAmount] decimal(18,2),
    CONSTRAINT PK_Goal PRIMARY KEY ([GoalID]),
    CONSTRAINT FK_Goal_Account FOREIGN KEY (AccountID) REFERENCES Account(AccountID),

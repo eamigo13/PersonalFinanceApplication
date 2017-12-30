@@ -11,6 +11,8 @@ namespace PersonalFinanceApplication.Models
     {
         public int GoalID { get; set; }
 
+        public string GoalName { get; set; }
+
         [Required]
         public int AccountID { get; set; }
 
@@ -22,6 +24,9 @@ namespace PersonalFinanceApplication.Models
 
         [Required]
         public decimal BeginningAmount { get; set; }
+
+        [Required]
+        public decimal EndAmount { get; set; }
 
         [Required]
         public decimal GoalAmount { get; set; }
