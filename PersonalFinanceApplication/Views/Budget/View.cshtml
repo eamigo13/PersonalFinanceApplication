@@ -46,7 +46,13 @@
             contentType: 'application/json; charset=utf-8',
             success: function (response) {
                 //updateBudgetSummary();
-                myChart.update();
+                var canvasid = "Goal-" + goalid;
+                var savedamount = response.CurrentAmount - response.BeginningAmount;
+                var remainingamount = response.EndAmount - response.CurrentAmount;
+                var values = [savedamount, remainingamount];
+                $('#Goal-' + goalid).remove();
+                $('#GoalChartDiv-' + goalid).append("<canvas id=\"Goal-" + goalid + "\"></canvas>");
+                createGoalChart(canvasid, values);
 
             },
             failure: function (response) {
@@ -209,7 +215,7 @@
         var goals = @Html.Raw(Json.Encode(ViewBag.Goals));
 
         for (i = 0; i < goals.length; i++) {
-            
+
             var savedamount = goals[i].CurrentAmount - goals[i].BeginningAmount;
             var remainingamount = goals[i].GoalAmount - savedamount;
             var values = [savedamount, remainingamount];
@@ -277,7 +283,7 @@
 
         <div class="col-md-4" style="text-align: center">
             <h3>@ViewBag.Goals[i].GoalName</h3>
-            <canvas id="Goal-@ViewBag.Goals[i].GoalID"></canvas>
+            <div id="GoalChartDiv-@ViewBag.Goals[i].GoalID"><canvas id="Goal-@ViewBag.Goals[i].GoalID"></canvas></div>
             <br />
             <p>@ViewBag.Goals[i].Description</p>
             <br />
