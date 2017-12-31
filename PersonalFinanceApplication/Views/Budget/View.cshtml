@@ -8,10 +8,55 @@
 
 }
 
+<link rel="stylesheet" href="~/Content/Tabs.css">
+<link rel="stylesheet" href="~/Content/Modal.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
 
+
+
 <script>
+
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+
+    function UpdateGoal(goalid, currentamount, endamount) {
+        var goal = {
+            "GoalID": goalid,
+            "CurrentAmount": currentamount,
+            "EndAmount": endamount
+        };
+
+        $.ajax({
+            type: 'POST', //HTTP POST Method
+            url: '/Budget/UpdateGoal', // Controller/View
+            data: JSON.stringify(goal),
+            dataType: "json",
+            contentType: 'application/json; charset=utf-8',
+            success: function (response) {
+                //updateBudgetSummary();
+                myChart.update();
+
+            },
+            failure: function (response) {
+                alert("Fail");
+            },
+            error: function (response) {
+                alert("Fail");
+            }
+        });
+    }
 
     //This function generates a random hex color and is used to randomly color different slices of the pie chart
     function getRandomColor() {
@@ -58,6 +103,33 @@
         });
     }
 
+    function createGoalChart(canvasid, values)
+    {
+        //Create the labels for the donut chart
+        var goallabels = ["Saved", "Remaining"];
+
+        //Get the values for the donut chart from the dictionary
+        var goalvalues = values;
+
+        //Colors for the donut chart
+        var goalcolors = ["#37a848", "#9d9fa0"]; //gray for unused and green for used
+
+        //create the elements necessary to create a donut chart on on the 'donutcanvas' div
+        var goalcanvas = document.getElementById(canvasid);
+        var goalctx = goalcanvas.getContext('2d');
+
+        var myChart = new Chart(goalctx, {
+            type: 'doughnut',
+            data: {
+                labels: goallabels,
+                datasets: [{
+                    data: goalvalues,
+                    backgroundColor: goalcolors
+                }]
+            }
+        });
+    }
+
     function showRelatedTransactions(cname)
     {
         var transactionsdiv = document.getElementById("transactionsdiv");
@@ -80,6 +152,10 @@
     }
 
     $(document).ready(function () {
+
+        // Get the element with id="defaultOpen" and click on it
+        document.getElementById("defaultOpen").click();
+
         //Add all transactions when the page initially opens as well as the alltransaction donut chart
         showRelatedTransactions("All");
         createDonutChart("All");
@@ -129,46 +205,111 @@
             }
         };
 
+        //Convert the goals array in the viewbag to a json object
+        var goals = @Html.Raw(Json.Encode(ViewBag.Goals));
 
-
+        for (i = 0; i < goals.length; i++) {
+            
+            var savedamount = goals[i].CurrentAmount - goals[i].BeginningAmount;
+            var remainingamount = goals[i].GoalAmount - savedamount;
+            var values = [savedamount, remainingamount];
+            //alert(goals[i].CurrentAmount);
+            var canvasid = "Goal-" + goals[i].GoalID;
+            createGoalChart(canvasid, values);
+        }
     })
 
 </script>
 <br />
 <br />
 
-<div class="row">
-    <div class = "col-md-6">
-        <h3 style="text-align: center">Expenditures by Category</h3>
-        <canvas id="piecanvas"></canvas>
+<div class="tab">
+    <button class="tablinks" id="defaultOpen" onclick="openTab(event, 'Expenditures')">Expenditures</button>
+    <button class="tablinks" onclick="openTab(event, 'Goals')">Goals</button>
+</div>
+
+
+
+<div class="tabcontent" id="Expenditures">
+    <div class="row">
+        <div class = "col-md-6">
+            <h3 style="text-align: center">Expenditures by Category</h3>
+            <canvas id="piecanvas"></canvas>
+        </div>
+        <div id="donutdiv" class="col-md-6">
+            <h3 id="donuttitle" style="text-align: center"></h3>
+            <canvas id="donutcanvas"></canvas>
+        </div>
     </div>
-    <div id="donutdiv" class="col-md-6">
-        <h3 id="donuttitle" style="text-align: center"></h3>
-        <canvas id="donutcanvas"></canvas>
+
+    <hr />
+    <div class="row">
+        <div class="col-md-2">
+            <strong>Date</strong>
+        </div>
+        <div class="col-md-4">
+            <strong>Description</strong>
+        </div>
+        <div class="col-md-2">
+            <strong>Amount</strong>
+        </div>
+        <div class="col-md-2">
+            <strong>Category</strong>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-success" onclick="showAll()">Show All Categories</button>
+        </div>
+    </div>
+
+    <div id="transactionsdiv">
     </div>
 </div>
 
-<hr />
-<div class="row">
-    <div class="col-md-2">
-        <strong>Date</strong>
-    </div>
-    <div class="col-md-4">
-        <strong>Description</strong>
-    </div>
-    <div class="col-md-2">
-        <strong>Amount</strong>
-    </div>
-    <div class="col-md-2">
-        <strong>Category</strong>
-    </div>
-    <div class="col-md-2">
-        <button class="btn btn-success" onclick="showAll()">Show All Categories</button>
-    </div>
+<div class="tabcontent" id="Goals">
+
+    @for (int i = 0; i < ViewBag.Goals.Length; i++)
+    {
+        //Create a new bootstrap row every four rows
+        if (i % 3 == 0)
+        {
+            @:<div class="row">
+        }
+
+        <div class="col-md-4" style="text-align: center">
+            <h3>@ViewBag.Goals[i].GoalName</h3>
+            <canvas id="Goal-@ViewBag.Goals[i].GoalID"></canvas>
+            <br />
+            <p>@ViewBag.Goals[i].Description</p>
+            <br />
+            <div class="row">
+                <div class="col-md-6">
+                    <strong>Current Amount: </strong>
+                </div>
+                <div class="col-md-6">
+                    <input type="number" class="form-control" id="UpdateCurrentAmount-@ViewBag.Goals[i].GoalID" value="@ViewBag.Goals[i].CurrentAmount" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <strong>End Amount: </strong>
+                </div>
+                <div class="col-md-6">
+                    <input type="number" class="form-control" id="UpdateEndAmount-@ViewBag.Goals[i].GoalID" value="@ViewBag.Goals[i].EndAmount" />
+                </div>
+            </div>
+            <br />
+            <br />
+            <button onclick="UpdateGoal(@ViewBag.Goals[i].GoalID, $('#UpdateCurrentAmount-@ViewBag.Goals[i].GoalID').val(), $('#UpdateEndAmount-@ViewBag.Goals[i].GoalID').val())" class="btn btn-success">Update</button>
+        </div>
+
+        //End the bootstrap row every four rows.
+        if ((i + 1) % 3 == 0 || (i + 1) == list.Count)
+        {
+            @:</div>
+        }
+    }
 </div>
 
-<div id="transactionsdiv">
-</div>
 
 
 

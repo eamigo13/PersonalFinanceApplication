@@ -98,6 +98,9 @@ namespace PersonalFinanceApplication.Controllers
             //Add the budget to the viewbag
             ViewBag.budget = budget;
 
+            //Add related goals to the viewbag
+            ViewBag.Goals = db.Goals.Where(g => g.BudgetID == id).ToArray();
+
             //Return all BudgetCategory rows associated with the budget.  The following SQL updates the used amount and remaining amount
             var categoryquery = @"  select 
 	                                    bc.BudgetID,
@@ -257,8 +260,11 @@ namespace PersonalFinanceApplication.Controllers
         }
 
         [HttpPost]
-        public JsonResult UpdateGoal(Goal goal)
+        public JsonResult UpdateGoal(Goal updatedgoal)
         {
+            var goal = db.Goals.Find(updatedgoal.GoalID);
+            goal.CurrentAmount = updatedgoal.CurrentAmount;
+            goal.EndAmount = updatedgoal.EndAmount;
             db.Entry(goal).State = EntityState.Modified;
             db.SaveChanges();
             return Json(goal);

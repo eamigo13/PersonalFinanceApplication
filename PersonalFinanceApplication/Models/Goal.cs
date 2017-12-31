@@ -31,10 +31,12 @@ namespace PersonalFinanceApplication.Models
         [Required]
         public decimal GoalAmount { get; set; }
 
-        [ForeignKey("AccountID")]
-        public virtual Account Account { get; set; }
+        public decimal CurrentAmount { get; set; }
 
-        [ForeignKey("BudgetID")]
-        public virtual Budget Budget { get; set; }
+        //[ForeignKey("AccountID")]
+        //public virtual Account Account { get; set; }
+
+        //[ForeignKey("BudgetID")]
+        //public virtual Budget Budget { get; set; }
     }
 }

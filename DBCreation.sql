@@ -126,6 +126,7 @@ CREATE TABLE [Budget] (
   [Description] nvarchar(200),
   [BeginDate] date NOT NULL,
   [EndDate] date NOT NULL,
+  [ExpectedIncome] decimal(18,2),
   CONSTRAINT PK_Budget PRIMARY KEY ([BudgetID]),
 );
 
@@ -166,6 +167,7 @@ CREATE TABLE [Goal] (
    [BeginningAmount] decimal(18,2),
    [EndAmount] decimal(18,2),
    [GoalAmount] decimal(18,2),
+   [CurrentAmount] decimal(18,2),
    CONSTRAINT PK_Goal PRIMARY KEY ([GoalID]),
    CONSTRAINT FK_Goal_Account FOREIGN KEY (AccountID) REFERENCES Account(AccountID),
    CONSTRAINT FK_Goal_Budget FOREIGN KEY (BudgetID) REFERENCES Budget(BudgetID)
