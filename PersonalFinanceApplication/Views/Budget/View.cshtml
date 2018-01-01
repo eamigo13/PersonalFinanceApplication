@@ -10,10 +10,242 @@
 
 <link rel="stylesheet" href="~/Content/Tabs.css">
 <link rel="stylesheet" href="~/Content/Modal.css">
+<link rel="stylesheet" href="~/Content/FixedNavBar.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
 
+<script>
 
+    function Update(budgetid, categoryid, amount) {
+
+        var updatedbudgetcategory = {
+            "BudgetID": budgetid,
+            "CategoryID": categoryid,
+            "Amount": amount
+        };
+
+        $.ajax({
+            type: 'POST', //HTTP POST Method
+            url: '/Budget/UpdateCategory', // Controller/View
+            data: JSON.stringify(updatedbudgetcategory),
+            dataType: "json",
+            contentType: 'application/json; charset=utf-8',
+            success: function (response) {
+                //alert("Success");
+                updateBudgetSummary();
+            },
+            failure: function (response) {
+                alert("Fail");
+            },
+            error: function (response) {
+                alert("Fail");
+            }
+        });
+    }
+
+    function Delete(budgetid, categoryid) {
+
+        var deletedbudgetcategory = {
+            "BudgetID": budgetid,
+            "CategoryID": categoryid
+        };
+
+        $.ajax({
+            type: 'POST', //HTTP POST Method
+            url: '/Budget/DeleteCategory', // Controller/View
+            data: JSON.stringify(deletedbudgetcategory),
+            dataType: "json",
+            contentType: 'application/json; charset=utf-8',
+            success: function (response) {
+                //alert("Success");
+                $('#' + categoryid).remove();
+                updateBudgetSummary();
+            },
+            failure: function (response) {
+                alert("Fail");
+            },
+            error: function (response) {
+                alert("Fail");
+            }
+        });
+    }
+
+    function DeleteGoal(goalid) {
+        var deletedgoal = {
+            "GoalID": goalid
+        }
+
+        $.ajax({
+            type: 'POST', //HTTP POST Method
+            url: '/Budget/DeleteGoal', // Controller/View
+            data: JSON.stringify(deletedgoal),
+            dataType: "json",
+            contentType: 'application/json; charset=utf-8',
+            success: function (response) {
+                //alert("Success");
+                $('#Goal-' + goalid).remove();
+                updateBudgetSummary();
+            },
+            failure: function (response) {
+                alert("Fail");
+            },
+            error: function (response) {
+                alert("Fail");
+            }
+        });
+    }
+
+    function updateBudgetSummary() {
+
+
+        var budgetID = @ViewBag.budget.BudgetID;
+        var budget = {
+            "BudgetID": budgetID
+        }
+
+
+        $.ajax({
+            type: 'POST', //HTTP POST Method
+            url: '/Budget/GetBudgetSummary', // Controller/View
+            data: JSON.stringify(budget),
+            dataType: "json",
+            contentType: 'application/json; charset=utf-8',
+            success: function (budgetsummary) {
+                $('#BudgetSummaryIncome').text(budgetsummary.ExpectedIncome.toString());
+                $('#BudgetSummaryExpenditures').text(budgetsummary.Expenditures);
+                $('#BudgetSummaryGoals').text(budgetsummary.Goals);
+                $('#BudgetSummaryRemaining').text(budgetsummary.Remaining);
+
+            },
+            failure: function (response) {
+                alert("Fail");
+            },
+            error: function (response) {
+                alert("Fail");
+            }
+        });
+    }
+
+
+    $(document).ready(function () {
+
+        updateBudgetSummary();
+
+        $('#AddCategoryRow').hide();
+
+        $("#AddCategoryBtn").click(function () {
+            $('#AddCategoryRow').show();
+        });
+
+        $("#AddNewCategoryBtn").click(function () {
+            var newbudgetcategory = {
+                "BudgetID": @ViewBag.budget.BudgetID,
+                "CategoryID": $('#NewCategoryID').val(),
+                "Amount": $('#NewCategoryAmount').val()
+            }
+
+            AddCategory(newbudgetcategory);
+        });
+
+        $("#CancelNewCategoryBtn").click(function () {
+            $('#AddCategoryRow').hide();
+        });
+
+        function AddCategory(budgetcategory) {
+            $.ajax({
+                type: 'POST', //HTTP POST Method
+                url: '/Budget/AddCategory', // Controller/View
+                data: JSON.stringify(budgetcategory),
+                dataType: "json",
+                contentType: 'application/json; charset=utf-8',
+                success: function (response) {
+                    //alert("Success");
+                    var newrow = "<div id=\"" + budgetcategory.CategoryID + "\"><div class=\"row\"><div class=\"col-md-2\"><p>" + response + "</p></div><div class=\"col-md-2\"><input id=\"Amount-" + budgetcategory.CategoryID + "\" type=\"number\" class=\"form-control\" value=\"" + budgetcategory.Amount + "\" placeholder=\"Amount\" /></div><div class=\"col-md-1\"><button onclick=\"Update(" + budgetcategory.BudgetID + "," + budgetcategory.CategoryID + ", $(\'#Amount-\'+" + budgetcategory.CategoryID + ").val())\" class=\"btn btn-success\">Update</button></div><div class=\"col-md-1\"><button onclick=\"Delete(" + budgetcategory.BudgetID + "," + budgetcategory.CategoryID + ")\" class=\"btn btn-danger\">Remove</button></div></div><hr /></div>";
+                    $('#Categories').append(newrow);
+                    $('#AddCategoryRow').hide();
+                    $('#NewCategoryAmount').val('');
+                    updateBudgetSummary();
+                },
+                failure: function (response) {
+                    alert("Fail");
+                },
+                error: function (response) {
+                    alert("Fail");
+                }
+            });
+        }
+
+        function AddGoal(goal) {
+            $.ajax({
+                type: 'POST', //HTTP POST Method
+                url: '/Budget/AddGoal', // Controller/View
+                data: JSON.stringify(goal),
+                dataType: "json",
+                contentType: 'application/json; charset=utf-8',
+                success: function (response) {
+                    //alert("Success");
+                    var newrow = "<div id=\"Goal-" + response + "\"><div class=\"row\"><div class=\"col-md-6\"><strong>" + goal.GoalName + "</strong><p>" + goal.Description + "</p></div><div class=\"col-md-2\">" + goal.GoalAmount + "</div><div class=\"col-md-2\"><button onclick=\"\" class=\"btn btn-success\">Update</button></div><div class=\"col-md-2\"><button onclick=\"DeleteGoal(" + response + ")\" class=\"btn btn-danger\">Remove</button></div></div><hr /></div>";
+                    $('#Goals').append(newrow);
+                    addgoalmodal.style.display = "none";
+                    updateBudgetSummary();
+                },
+                failure: function (response) {
+                    alert("Fail");
+                },
+                error: function (response) {
+                    alert("Fail");
+                }
+            });
+        }
+
+        // Get the modal
+        var addgoalmodal = document.getElementById('AddGoalModal');
+
+        // Get the <span> element that closes the modal
+        var vspan = document.getElementsByClassName("close")[0];
+
+
+        // When the user clicks on <span> (x), close the modal
+        $(".close").click(function () {
+            addgoalmodal.style.display = "none";
+        });
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function (event) {
+            if (event.target == vendormodal) {
+                addgoalmodal.style.display = "none";
+            }
+        }
+
+        //When add goal button is clicked, open the add goal modal
+        $('#AddGoalBtn').click(function () {
+            //Show the modal
+            addgoalmodal.style.display = "block";
+        });
+
+        $('#AddGoal').click(function () {
+
+            var newgoalname = $('#GoalNameInput').val();
+            var newgoaldescription = $('#GoalDescriptionInput').val();
+            var newgoalbegamount = $('#GoalBegAmountInput').val();
+            var newgoalendamount = $('#GoalEndAmountInput').val();
+            var newgoalgoalamount = newgoalendamount - newgoalbegamount;
+            var newgoalbudgetid = @ViewBag.budget.BudgetID;
+
+            var newgoal = {
+                "GoalName": newgoalname,
+                "BudgetID": newgoalbudgetid,
+                "Description": newgoaldescription,
+                "BeginningAmount": newgoalbegamount,
+                "EndAmount": newgoalendamount,
+                "GoalAmount": newgoalgoalamount,
+                "CurrentAmount": newgoalbegamount
+            }
+
+            AddGoal(newgoal);
+        });
+    })
+</script>
 
 <script>
 
@@ -225,20 +457,114 @@
         }
     })
 
+    $('#Parent').scroll(function () {
+        $('#budgetsummary').css('top', $(this).scrollTop());
+    });
+
 </script>
 <br />
+
+
+
+<div class="row">
+    <div class="col-md-8">
+        <h2>@ViewBag.budget.BudgetName</h2>
+        <strong>From @ViewBag.budget.BeginDate to @ViewBag.budget.EndDate</strong>
+        <p>@ViewBag.budget.Description</p>
+    </div>
+</div>
+
+<div id="AddGoalModal" class="modal">
+
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Add a New Goal</h3>
+        <input type="text" id="GoalNameInput" placeholder="Goal Name" /><br /><br />
+        <textarea id="GoalDescriptionInput" rows="4" placeholder="Goal Description"></textarea><br /><br />
+        <input type="number" id="GoalBegAmountInput" placeholder="Beginning Amount" /><br /><br />
+        <input type="number" id="GoalEndAmountInput" placeholder="End Amount" /><br /><br />
+
+        <input type="button" value="Add" id="AddGoal" />
+
+    </div>
+
+</div>
+
+<div class="buttonsummary bottomnavbar">
+    <p><strong>Expected Income: </strong><text id="BudgetSummaryIncome">20,000</text></p>
+    <p><strong>Budgeted Expenditures: </strong><text id="BudgetSummaryExpenditures"></text></p>
+    <p><strong>Goals: </strong><text id="BudgetSummaryGoals"></text></p>
+    <p><strong>Remaining: </strong><text id="BudgetSummaryRemaining"></text></p>
+</div>
+
 <br />
 
 <div class="tab">
     <button class="tablinks" id="defaultOpen" onclick="openTab(event, 'Expenditures')">Expenditures</button>
     <button class="tablinks" onclick="openTab(event, 'Goals')">Goals</button>
+    <button class="tablinks" onclick="openTab(event, 'Categories')">Categories</button>
 </div>
 
 
 
+<div class="tabcontent" id="Categories">
+    <br />
+    <div class="row">
+        <div class="col-md-2">
+            <strong>Category</strong>
+        </div>
+        <div class="col-md-2">
+            <strong>Amount</strong>
+        </div>
+        <div class="col-md-2">
+            <button id="AddCategoryBtn" class="btn btn-success">Add Category</button>
+        </div>
+    </div>
+    <hr />
+
+    <div id="AddCategoryRow">
+        <div class="row">
+            <div class="col-md-2">
+                @Html.DropDownList("CategoryID", new SelectList(ViewBag.Categories, "CategoryID", "CategoryName"), new { @class = "form-control", @id = "NewCategoryID" })
+            </div>
+            <div class="col-md-2">
+                <input id="NewCategoryAmount" type="number" class="form-control" placeholder="Amount" />
+            </div>
+            <div class="col-md-2">
+                <button id="AddNewCategoryBtn" class="btn btn-success">Add</button>
+                <button id="CancelNewCategoryBtn" class="btn btn-danger">Cancel</button>
+            </div>
+        </div>
+        <hr />
+    </div>
+
+    @foreach (var item in Model)
+    {
+
+        <div id="@item.CategoryID">
+            <div class="row">
+                <div class="col-md-2">
+                    <p>@item.Category.CategoryName</p>
+                </div>
+                <div class="col-md-2">
+                    <input id="Amount-@item.CategoryID" type="number" class="form-control" value="@item.Amount" placeholder="Amount" />
+                </div>
+                <div class="col-md-1">
+                    <button onclick="Update(@item.BudgetID, @item.CategoryID, $('#Amount-'+@item.CategoryID).val())" class="btn btn-success">Update</button>
+                </div>
+                <div class="col-md-1">
+                    <button onclick="Delete(@item.BudgetID, @item.CategoryID)" class="btn btn-danger">Remove</button>
+                </div>
+            </div>
+            <hr />
+        </div>
+
+    }
+</div>
+
 <div class="tabcontent" id="Expenditures">
     <div class="row">
-        <div class = "col-md-6">
+        <div class="col-md-6">
             <h3 style="text-align: center">Expenditures by Category</h3>
             <canvas id="piecanvas"></canvas>
         </div>
@@ -271,7 +597,10 @@
     </div>
 </div>
 
+
 <div class="tabcontent" id="Goals">
+
+    <button id="AddGoalBtn" class="btn btn-success">Add Goal</button>
 
     @for (int i = 0; i < ViewBag.Goals.Length; i++)
     {
@@ -279,7 +608,7 @@
         if (i % 3 == 0)
         {
             @:<div class="row">
-        }
+    }
 
         <div class="col-md-4" style="text-align: center">
             <h3>@ViewBag.Goals[i].GoalName</h3>
@@ -306,6 +635,7 @@
             <br />
             <br />
             <button onclick="UpdateGoal(@ViewBag.Goals[i].GoalID, $('#UpdateCurrentAmount-@ViewBag.Goals[i].GoalID').val(), $('#UpdateEndAmount-@ViewBag.Goals[i].GoalID').val())" class="btn btn-success">Update</button>
+            <br />
         </div>
 
         //End the bootstrap row every four rows.
@@ -315,6 +645,11 @@
         }
     }
 </div>
+
+
+
+
+
 
 
 

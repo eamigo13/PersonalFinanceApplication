@@ -1,0 +1,25 @@
+﻿/* The navigation bar */
+.bottomnavbar {
+    overflow: hidden;
+    background-color: #333;
+    position: fixed; /* Set the navbar to fixed position */
+    bottom: 0; /* Position the navbar at the bottom of the page */
+
+    z-index: 10;
+    color: #f2f2f2;
+}
+
+/* Links inside the navbar */
+.bottomnavbar p {
+    float: left;
+    display: block;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+/* Main content */
+.body-content {
+    margin-bottom: 40px; /* Add a top margin to avoid content overlay */
+}

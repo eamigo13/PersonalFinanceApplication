@@ -15,6 +15,8 @@ ALTER TABLE VendorCategory DROP CONSTRAINT FK_VendorCategory_Category;
 ALTER TABLE VendorAbbrev DROP CONSTRAINT FK_VendorAbbrev_Vendor;
 ALTER TABLE Goal DROP CONSTRAINT FK_Goal_Account;
 ALTER TABLE Goal DROP CONSTRAINT FK_Goal_Budget;
+ALTER TABLE Income DROP CONSTRAINT FK_Income_IncomeType;
+ALTER TABLE Income DROP CONSTRAINT FK_Income_Budget FOREIGN KEY (BudgetID) REFERENCES Budget(BudgetID);
 
 GO
 
@@ -42,6 +44,8 @@ DROP TABLE [Transaction];
 DROP TABLE Budget;
 DROP TABLE BudgetCategory;
 DROP TABLE Goal;
+DROP TABLE IncomeType;
+DROP TABLE Income;
 
 GO
 
@@ -172,6 +176,27 @@ CREATE TABLE [Goal] (
    CONSTRAINT FK_Goal_Account FOREIGN KEY (AccountID) REFERENCES Account(AccountID),
    CONSTRAINT FK_Goal_Budget FOREIGN KEY (BudgetID) REFERENCES Budget(BudgetID)
 );
+
+CREATE TABLE [IncomeType] (
+	[IncomeTypeID] int identity (1,1),
+	[Description] nvarchar(50),
+	CONSTRAINT PK_IncomeType PRIMARY KEY ([IncomeTypeID]),
+);
+
+INSERT INTO IncomeType VALUES ('Salary'), ('Hourly');
+
+
+CREATE TABLE [Income] (
+	[IncomeID] int identity (1,1),
+	[BudgetID] int,
+	[IncomeTypeID] int,
+	[HoursPerWeek] int,
+	[Wage] decimal(18,2),
+	CONSTRAINT PK_Income PRIMARY KEY ([IncomeID]),
+	CONSTRAINT FK_Income_IncomeType FOREIGN KEY (IncomeTypeID) REFERENCES IncomeType(IncomeTypeID),
+	CONSTRAINT FK_Income_Budget FOREIGN KEY (BudgetID) REFERENCES Budget(BudgetID),
+);
+
 
 INSERT INTO Status VALUES
 ('Unconfirmed'),
