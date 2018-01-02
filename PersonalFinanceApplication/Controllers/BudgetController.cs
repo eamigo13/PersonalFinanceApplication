@@ -98,6 +98,36 @@ namespace PersonalFinanceApplication.Controllers
             //Add the budget to the viewbag
             ViewBag.budget = budget;
 
+
+
+
+
+            //Calculate expected income
+
+            //Create variables for all incomes related with the budget.  Separate into salary incomes and hourly incomes
+            var HourlyIncomes = db.Incomes.Where(i => i.BudgetID == id && i.IncomeType.Description == "Hourly").ToList();
+            var SalaryIncomes = db.Incomes.Where(i => i.BudgetID == id && i.IncomeType.Description == "Salary").ToList();
+
+            //Today's Date
+            DateTime today = DateTime.Today;
+
+            //Week's remaining in budget 
+            TimeSpan ts = budget.EndDate - today;
+            decimal weeksRemaining = ts.Days / 7;
+
+            //Calculate expected income.  First sum up expected hourly income remaining and then add salaries
+            var expectedIncome = HourlyIncomes.Sum(i => (i.HoursPerWeek * i.Wage * weeksRemaining));
+            expectedIncome += SalaryIncomes.Sum(i => (i.Wage));
+
+            //Add incomes to Viewbag
+            ViewBag.HourlyIncomes = HourlyIncomes;
+            ViewBag.SalaryIncomes = SalaryIncomes;
+
+            
+
+
+
+
             //Add related goals to the viewbag
             ViewBag.Goals = db.Goals.Where(g => g.BudgetID == id).ToArray();
 

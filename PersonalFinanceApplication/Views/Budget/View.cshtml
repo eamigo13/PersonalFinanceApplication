@@ -501,11 +501,79 @@
 
 <div class="tab">
     <button class="tablinks" id="defaultOpen" onclick="openTab(event, 'Expenditures')">Expenditures</button>
+    <button class="tablinks" onclick="openTab(event, 'Income')">Income</button>
+    <button class="tablinks" onclick="openTab(event, 'Categories')">Budget</button>
     <button class="tablinks" onclick="openTab(event, 'Goals')">Goals</button>
-    <button class="tablinks" onclick="openTab(event, 'Categories')">Categories</button>
 </div>
 
+<div class="tabcontent" id="Income">
+    <h4>Hourly Incomes</h4>
+    <hr />
+    <div class="row">
+        <div class="col-md-2">
+            <strong>Description</strong>
+        </div>
+        <div class="col-md-2">
+            <strong>Wage</strong>
+        </div>
+        <div class="col-md-2">
+            <strong>Hours Per Week</strong>
+        </div>
+        <div class="col-md-1">
+            <strong>Type</strong>
+        </div>
+    </div>
+    <hr/>
 
+    @foreach(var item in ViewBag.HourlyIncomes)
+    {
+        <div class="row">
+            <div class="col-md-2">
+                @item.IncomeName
+            </div>
+            <div class="col-md-2">
+                <input type="number" id="Wage-@item.IncomeID" value="@item.Wage" placeholder="@item.Wage" class="form-control"/>
+            </div>
+            <div class="col-md-2">
+                <input type="number" id="Hours-@item.IncomeID" value="@item.HoursPerWeek" placeholder="@item.HoursPerWeek" class="form-control" />
+            </div>
+            <div class="col-md-1">
+                @item.IncomeType.Description
+            </div>
+            <div class="col-md-1">
+                <button class="btn btn-success">Update</button>
+            </div>
+            <div class="col-md-1">
+                <button class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+        <hr />
+    }
+
+    @foreach (var item in ViewBag.SalaryIncomes)
+    {
+        <div class="row">
+            <div class="col-md-2">
+                @item.IncomeName
+            </div>
+            <div class="col-md-2">
+                <input type="number" id="Wage-@item.IncomeID" value="@item.Wage" placeholder="@item.Wage" class="form-control" />
+            </div>
+            <div class="col-md-2">
+            </div>
+            <div class="col-md-1">
+                @item.IncomeType.Description
+            </div>
+            <div class="col-md-1">
+                <button class="btn btn-success">Update</button>
+            </div>
+            <div class="col-md-1">
+                <button class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+        <hr />
+    }
+</div>
 
 <div class="tabcontent" id="Categories">
     <br />

@@ -14,6 +14,7 @@ namespace PersonalFinanceApplication.Models
         public int IncomeTypeID { get; set; }
         public int HoursPerWeek { get; set; }
         public decimal Wage { get; set; }
+        public string IncomeName { get; set; }
 
         [ForeignKey("BudgetID")]
         public virtual Budget Budget { get; set; }
