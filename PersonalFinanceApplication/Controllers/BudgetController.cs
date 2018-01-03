@@ -255,11 +255,14 @@ namespace PersonalFinanceApplication.Controllers
         }
 
         [HttpPost]
-        public JsonResult UpdateCategory(BudgetCategory budgetcategory)
+        public JsonResult UpdateCategory(BudgetCategory bc)
         {
+            var budgetcategory = db.BudgetCategories.Find(bc.BudgetID, bc.CategoryID);
+            budgetcategory.Amount = bc.Amount;
             db.Entry(budgetcategory).State = EntityState.Modified;
             db.SaveChanges();
-            return Json(budgetcategory);
+            var returnCategory = createSimpleBudgetCategory(budgetcategory);
+            return Json(returnCategory);
         }
 
         [HttpPost]

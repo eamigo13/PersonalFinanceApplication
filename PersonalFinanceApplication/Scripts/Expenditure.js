@@ -46,43 +46,63 @@ function showDonutChart(category) {
     $('.donutcanvas').hide();
     $('#donutcanvas' + category.CategoryID).show();
     $('#donuttitle').text(category.CategoryName);
+    $('#donutusedp').text(category.UsedAmountThisPeriod);
+    $('#donutremainingp').text(category.RemainingAmountThisPeriod);
     category.DonutChart.update();
 }
 
 function generateDonutCharts() {
     for(var i = 0; i < categories.length; i++)
     {
-        //Append a canvas for each donut chart
-        var html = "<canvas id=\"donutcanvas" + categories[i].CategoryID + "\" class=\"donutcanvas\"></canvas>"
-        $('#donutdiv').append(html);
-
-        //Create a donut chart and append it to the associated category object
-
-        //Create an array of labels
-        var donutlabels = ["Used", "Remaining"];
-
-        //Create array of data
-        var donutvalues = [categories[i].UsedAmountThisPeriod, categories[i].RemainingAmountThisPeriod]
-
-        //Create an array of colors
-        var donutcolors = ["#9d9fa0", "#37a848"]; //gray for unused and green for used
-
-        //Add the values, labels, and colors into a data object to be used by the piechart
-        var data = {
-            labels: donutlabels,
-            datasets: [{
-                data: donutvalues,
-                backgroundColor: donutcolors
-            }]
-        };
-
-        //create the elements necessary to create a pie chart on on the 'piecanvas' div
-        var ctx = document.getElementById('donutcanvas' + categories[i].CategoryID).getContext("2d");
-        categories[i].DonutChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: data,
-        }); 
+        generateDonutChart(categories[i]);
     }
+}
+
+function generateDonutChart(category) {
+    //Append a canvas for each donut chart
+    var html = "<canvas id=\"donutcanvas" + category.CategoryID + "\" class=\"donutcanvas\"></canvas>"
+    $('#donutdiv').append(html);
+
+    //Create a donut chart and append it to the associated category object
+
+    //Create an array of labels
+    var donutlabels = ["Used", "Remaining"];
+
+    //Create array of data
+    if (category.RemainingAmountThisPeriod > 0)
+    {
+        var donutvalues = [category.UsedAmountThisPeriod, category.RemainingAmountThisPeriod]
+    }
+    else
+    {
+        var donutvalues = [category.UsedAmountThisPeriod,0]
+    }
+
+    //Create an array of colors
+    if (category.RemainingAmountThisPeriod > 0)
+    {
+        var donutcolors = ["#9d9fa0", "#37a848"]; //green for unused and gray for used
+    }
+    else
+    {
+        var donutcolors = ["#e00000", "#37a848"];
+    }
+
+    //Add the values, labels, and colors into a data object to be used by the piechart
+    var data = {
+        labels: donutlabels,
+        datasets: [{
+            data: donutvalues,
+            backgroundColor: donutcolors
+        }]
+    };
+
+    //create the elements necessary to create a pie chart on on the 'piecanvas' div
+    var ctx = document.getElementById('donutcanvas' + category.CategoryID).getContext("2d");
+    category.DonutChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: data,
+    }); 
 }
 
 function updateBudgetCategory(categoryid, amount) {
@@ -101,6 +121,14 @@ function updateBudgetCategory(categoryid, amount) {
         contentType: 'application/json; charset=utf-8',
         success: function (response) {
             //alert("Category Successfully Updated");
+            var category = categories.find(function (obj) { return obj.CategoryID == response.CategoryID; });
+            var index = categories.indexOf(category);
+            categories[index] = response;
+            
+            generateDonutChart(categories[index]);
+            showDonutChart(categories[index]);
+
+            alert(response.DonutChart + " " + categories[index].DonutChart); 
         },
         failure: function (response) {
             alert("Failure");
@@ -263,6 +291,11 @@ function addPieChart(categories) {
     pieChart = new Chart(ctx, {
         type: 'pie',
         data: data,
+        options: {
+            legend: {
+                display: false
+            },
+        }
     });
 
     /*When a pie slice is clicked, pass the name of the category to the create donut chart
@@ -280,7 +313,7 @@ function addPieChart(categories) {
             $('.' + label).show();
 
             //Show the appropriate donut chart
-            var category = categories.find(function (obj) { return obj.CategoryName == label; });
+            var category = categories.find(function (obj) { return obj.CategoryName.replace(/\s/g, '') == label; });
             showDonutChart(category);
             
         }
@@ -361,6 +394,7 @@ $(document).ready(function () {
                 $('#newCategoryName').val('');
                 $('#newCategoryType').val('');
                 addToPieChart(response);
+                generateDonutChart(response);
 
                 //Remove the other class on all transactions corresponsding with added cateogory so they don't show up when clickin the other slice
                 $('.transactionrow.' + response.CategoryName.replace(/\s/g, '')).removeClass("Other");                
