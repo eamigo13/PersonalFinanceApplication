@@ -37,11 +37,39 @@ function getExpenditures(budgetid)
     });
 }
 
-function deleteBudgetCategory(categoryid) {
+function updateBudgetCategory(categoryid, amount) {
     var budgetcategory = {
         "BudgetID": budget.BudgetID,
-        "CategoryID": categoryid
+        "CategoryID": categoryid,
+        "Amount": amount
     }
+
+
+    $.ajax({
+        type: 'POST', //HTTP GET Method
+        url: '/Budget/UpdateCategory', // Controller/View
+        data: JSON.stringify(budgetcategory),
+        dataType: "json",
+        contentType: 'application/json; charset=utf-8',
+        success: function (response) {
+            alert("Category Successfully Updated");
+        },
+        failure: function (response) {
+            alert("Failure");
+        },
+        error: function (response) {
+            alert("Error");
+        }
+    });
+}
+
+function deleteBudgetCategory(categoryid) {
+
+    var budgetcategory = {
+        "BudgetID": budget.BudgetID,
+        "CategoryID": categoryid,
+    }
+    
     $.ajax({
         type: 'POST', //HTTP GET Method
         url: '/Budget/DeleteCategory', // Controller/View
@@ -49,7 +77,7 @@ function deleteBudgetCategory(categoryid) {
         dataType: "json",
         contentType: 'application/json; charset=utf-8',
         success: function (response) {
-            //alert("Category Successfully Deleted");
+            alert("Category Successfully Deleted");
         },
         failure: function (response) {
             alert("Failure");
@@ -68,13 +96,13 @@ function addCategory(category) {
                             category.CategoryName +
                         "</div>" +
                         "<div class=\"col-md-2\">" +
-                            "<input type=\"number\" class=\"form-control categoryamountinput " + category.CategoryName + "\" value=\"" + category.Amount + "\" placeholder=\"" + category.Amount + "\" />" +
+                            "<input id = \"Amount" + category.CategoryID + "\" type=\"number\" class=\"form-control categoryamountinput " + category.CategoryName + "\" value=\"" + category.Amount + "\" placeholder=\"" + category.Amount + "\" />" +
                         "</div>" +
                         "<div class=\"col-md-1\">" +
                             category.BudgetType +
                         "</div>" +
                         "<div class=\"col-md-1\">" +
-                            "<button class=\"btn btn-success categoryupdate\" onclick=\"updateCategory(" + category.CategoryName + ")\">Update</button>" +
+                            "<button id = \"Update" + category.CategoryID + "\" class=\"" + category.CategoryID + " btn btn-success categoryupdate\">Update</button>" +
                         "</div>" +
                         "<div class=\"col-md-1\">" +
                             "<button id = \"Remove" + category.CategoryID + "\" class= \"" + category.CategoryID + " btn btn-danger categoryremove\">Remove</button>" +
@@ -84,6 +112,17 @@ function addCategory(category) {
                 "</div>"; 
 
     $('#categories').prepend(html);
+
+    $("#Update" + category.CategoryID).on("click", function () {
+        var categoryid = this.classList[0];
+        
+
+        var category = categories.find(function (obj) { return obj.CategoryID == categoryid; });
+        
+        category.Amount = $("#Amount" + category.CategoryID).val();
+        
+        updateBudgetCategory(category.CategoryID, category.Amount);
+    });
 
     $("#Remove" + category.CategoryID).on("click", function () {
         var categoryid = this.classList[0];
