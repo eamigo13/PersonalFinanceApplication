@@ -235,7 +235,9 @@
     <Compile Include="Models\Batch.cs" />
     <Compile Include="Models\Budget.cs" />
     <Compile Include="Models\BudgetCategory.cs" />
+    <Compile Include="Models\BudgetCategorySimple.cs" />
     <Compile Include="Models\BudgetSummary.cs" />
+    <Compile Include="Models\BudgetType.cs" />
     <Compile Include="Models\Category.cs" />
     <Compile Include="Models\CategoryType.cs" />
     <Compile Include="Models\Column.cs" />
@@ -285,6 +287,7 @@
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\Chart.js" />
     <Content Include="Scripts\Chart.min.js" />
+    <Content Include="Scripts\Expenditure.js" />
     <Content Include="Scripts\jquery-3.2.1.js" />
     <Content Include="Scripts\jquery-3.2.1.min.js" />
     <Content Include="Scripts\jquery-3.2.1.slim.js" />
@@ -301,6 +304,7 @@
     <Content Include="Scripts\respond.matchmedia.addListener.js" />
     <Content Include="Scripts\respond.matchmedia.addListener.min.js" />
     <Content Include="Scripts\respond.min.js" />
+    <Content Include="Scripts\Tabs.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -359,6 +363,7 @@
     <Content Include="Views\BudgetCategories\Edit.cshtml" />
     <Content Include="Views\BudgetCategories\Index.cshtml" />
     <Content Include="Views\Budget\Edit.cshtml" />
+    <Content Include="Views\Budget\ViewOld.cshtml" />
     <Content Include="Views\Budget\View.cshtml" />
   </ItemGroup>
   <ItemGroup>

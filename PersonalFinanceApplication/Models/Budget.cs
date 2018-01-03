@@ -31,7 +31,7 @@ namespace PersonalFinanceApplication.Models
         [Required]
         public DateTime EndDate { get; set; }
 
-        public decimal ExpectedIncome { get; set; }
+        public decimal OtherAmount { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<BudgetCategory> BudgetCategories { get; set; }

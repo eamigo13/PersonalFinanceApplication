@@ -25,7 +25,7 @@ namespace PersonalFinanceApplication.DAL
         public virtual DbSet<Vendor> Vendors { get; set; }
         public virtual DbSet<VendorAbbrev> VendorAbbrevs { get; set; }
         public virtual DbSet<VendorCategory> VendorCategory { get; set; }
-        //public virtual DbSet<BudgetCategory> BudgetCategories { get; set; }
+        public virtual DbSet<BudgetType> BudgetTypes { get; set; }
         public virtual DbSet<Goal> Goals { get; set; }
         public virtual DbSet<IncomeType> IncomeTypes { get; set; }
         public virtual DbSet<Income> Incomes { get; set; }

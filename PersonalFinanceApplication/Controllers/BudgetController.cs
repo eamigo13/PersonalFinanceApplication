@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
@@ -21,238 +22,213 @@ namespace PersonalFinanceApplication.Controllers
             return View(db.Budgets.ToList());
         }
 
-        //Get: Budgets/View
-        public ActionResult Edit(int? id)
+        //Get: Budgets/Expenditures
+        public JsonResult Expenditures(Budget b)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
+            //Find the budget in the database
+            int id = b.BudgetID;
             Budget budget = db.Budgets.Find(id);
-            if (budget == null)
-            {
-                return HttpNotFound();
-            }
 
-            //Add the budget to the viewbag
-            ViewBag.budget = budget;
+            /* 
+             * Determine how much time is left and how much time has past in the budget in 
+             * months, weeks, and days.  These valuse will be used in determining expected 
+             * income (for hourly jobs) and the remaining budget for weekly and monthly budget 
+             * categories.
+             */
 
-            //Add all the goals associated with the budget to the viewbag
-            ViewBag.Goals = db.Goals.Where(g => g.BudgetID == id);
-
-            //Return all BudgetCategory rows associated with the budget
-            var query = @"  select 
-	                            bc.BudgetID,
-	                            bc.CategoryID,
-	                            bc.Amount,
-	                            isnull(( select sum(t.Amount) from [Transaction] t
-	                              where t.CategoryID = bc.CategoryID 
-	                              and t.Date 
-		                            between (select b.BeginDate from Budget b where b.BudgetID = bc.BudgetID) 
-		                            and (select b.EndDate from Budget b where b.BudgetID = bc.BudgetID) ), 0 ) as UsedAmount,
-	                            (bc.Amount - isnull(( select sum(t.Amount) from [Transaction] t
-	                              where t.CategoryID = bc.CategoryID 
-	                              and t.Date 
-		                            between (select b.BeginDate from Budget b where b.BudgetID = bc.BudgetID) 
-		                            and (select b.EndDate from Budget b where b.BudgetID = bc.BudgetID) ), 0 ) ) as RemainingAmount
-	
-                            from BudgetCategory bc
-                            where bc.BudgetID =" + id;
-
-            var budgetcategories = db.Database.SqlQuery<BudgetCategory>(query).ToList();
-
-            foreach(var bc in budgetcategories)
-            {
-                db.Entry(bc).State = EntityState.Modified;
-            }
-
-            db.SaveChanges();
-
-            //var budgetcategories = db.BudgetCategories.Where(b => b.BudgetID == id).ToList();
-
-
-
-            //Add categories to ViewBag
-            ViewBag.Categories = db.Categories.ToList();
-
-            
-
-            //Add a select list of the categories
-
-            return View(budgetcategories);
-        }
-
-        //Get: Budgets/View
-        public ActionResult View(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Budget budget = db.Budgets.Find(id);
-            if (budget == null)
-            {
-                return HttpNotFound();
-            }
-
-            //Add the budget to the viewbag
-            ViewBag.budget = budget;
-
-
-
-
-
-            //Calculate expected income
-
-            //Create variables for all incomes related with the budget.  Separate into salary incomes and hourly incomes
-            var HourlyIncomes = db.Incomes.Where(i => i.BudgetID == id && i.IncomeType.Description == "Hourly").ToList();
-            var SalaryIncomes = db.Incomes.Where(i => i.BudgetID == id && i.IncomeType.Description == "Salary").ToList();
-
-            //Today's Date
+            //Today
             DateTime today = DateTime.Today;
 
-            //Week's remaining in budget 
-            TimeSpan ts = budget.EndDate - today;
-            decimal weeksRemaining = ts.Days / 7;
-
-            //Calculate expected income.  First sum up expected hourly income remaining and then add salaries
-            var expectedIncome = HourlyIncomes.Sum(i => (i.HoursPerWeek * i.Wage * weeksRemaining));
-            expectedIncome += SalaryIncomes.Sum(i => (i.Wage));
-
-            //Add incomes to Viewbag
-            ViewBag.HourlyIncomes = HourlyIncomes;
-            ViewBag.SalaryIncomes = SalaryIncomes;
-
-            
-
-
-
-
-            //Add related goals to the viewbag
-            ViewBag.Goals = db.Goals.Where(g => g.BudgetID == id).ToArray();
-
-            //Return all BudgetCategory rows associated with the budget.  The following SQL updates the used amount and remaining amount
-            var categoryquery = @"  select 
-	                                    bc.BudgetID,
-	                                    bc.CategoryID,
-	                                    bc.Amount,
-	                                    isnull(( select (sum(t.Amount)*-1) from [Transaction] t
-	                                      where t.CategoryID = bc.CategoryID 
-	                                      and t.Date 
-		                                    between (select b.BeginDate from Budget b where b.BudgetID = bc.BudgetID) 
-		                                    and (select b.EndDate from Budget b where b.BudgetID = bc.BudgetID) ), 0 ) as UsedAmount,
-	                                    (bc.Amount - isnull(( select (sum(t.Amount) * -1) from [Transaction] t
-	                                      where t.CategoryID = bc.CategoryID 
-	                                      and t.Date 
-		                                    between (select b.BeginDate from Budget b where b.BudgetID = bc.BudgetID) 
-		                                    and (select b.EndDate from Budget b where b.BudgetID = bc.BudgetID) ), 0 ) ) as RemainingAmount
-	
-                                    from BudgetCategory bc
-                                    where bc.BudgetID =" + id;
-
-            var budgetcategories = db.Database.SqlQuery<BudgetCategory>(categoryquery).ToList();
-            //var totalamountquery = @"";
-
-
-
-
-            //Save the changes to each budgetcategory row to the database
-            foreach (var bc in budgetcategories)
+            //Determine how many months, weeks, and days are past
+            TimeSpan pastTS = new TimeSpan();
+            if (today > budget.BeginDate)
             {
-                db.Entry(bc).State = EntityState.Modified;
+                //If the the budget is already started, calculate how much time is past in the budget
+                pastTS = today - budget.BeginDate;
+            }
+            else
+            {
+                pastTS = TimeSpan.Zero;
             }
 
-            db.SaveChanges();
+            double daysPast = pastTS.Days;
+            double weeksPast = daysPast / 7;
+            double monthsPast = daysPast / 30.42; //Avg days in a month is 30.42 in a non-leap year.  
 
-            //Add all the used amounts to the viewbag
-            var usedAmounts = new decimal[budgetcategories.Count() + 1]; //used amounts for each budget category plus one for 'other' used amount
-            var categoryNames = new string[budgetcategories.Count() + 1]; //category name for each budget category plus one for 'other' 
-            var nameAmountsDictionary = new Dictionary<string, decimal[]>();
-            var categoryTransactionDictionary = new Dictionary<string, SimpleTransaction[]>();
 
+            //Determine how many months, weeks, and days are left
+            TimeSpan remainingTS = new TimeSpan();
+            if (today > budget.BeginDate)
+            {
+                //If the the budget is already started, calculate how much time is left in the budget
+                remainingTS = budget.EndDate - today;
+            }
+            else
+            {
+                remainingTS = budget.EndDate - budget.BeginDate;
+            }
+
+            double daysRemaining = remainingTS.Days;
+            double weeksRemaining = daysRemaining / 7;
+            double monthsRemaining = daysRemaining / 30.42; //Avg days in a month is 30.42 in a non-leap year.  
+
+
+            /*  
+             * This section creates all the objects that are needed for the Expenditures tab. 
+             */
+
+            //Create a list of budgetcategories related to the budget
+            BudgetCategory[] bc = db.BudgetCategories.Where(c => c.BudgetID == id).ToArray();
+
+            //We don't want to incluce "Income" transactions and "Account Transfer" transactions in our calculations of expenditures
             List<string> excludedCategories = new List<string>
             {
                 "Income",
                 "Account Transfer"
             };
 
-            //Get all transactions between the begin date and end date of the budget
-            var allBudgetTransactions = (from t in new FinanceContext().Transactions
-                                         where t.Date >= budget.BeginDate && t.Date <= budget.EndDate && !excludedCategories.Contains(t.Category.CategoryName)
-                                         select new SimpleTransaction {
-                                             TransactionID = t.TransactionID,
-                                             CategoryID = t.CategoryID,
-                                             CategoryName = t.Category.CategoryName,
-                                             Date = t.Date,
-                                             Description = t.Description,
-                                             Amount = t.Amount }).ToArray();
+            //Create a list of category ids in the budget to be used in different linq queries
+            List<int> categoriesInBudget = (from c in bc
+                                            select c.CategoryID).ToList();
 
-            foreach (var item in allBudgetTransactions)
+            /* Create an array of BudgetCategorySimples to be passed to the client as a json object.
+             * The array will have a length of the budgetcategory list + 1 (for the other category which
+             * includes all transactions with a category not budgeted for and the 'Total' category).
+             */
+
+            BudgetCategorySimple[] budgetCategories = new BudgetCategorySimple[bc.Length + 2];
+
+            /* Create the 'other' category and and it to the array budgetCategories.  As part of 
+             * creation add an array of 'other' transactions to the 'other' category and make the 
+             * budget type a One-Time budget.
+             */
+
+            BudgetCategorySimple other = new BudgetCategorySimple();
+
+            other.CategoryName = "Other";
+            other.CategoryID = -1;
+
+            other.BudgetType = "One-Time";
+
+            other.Amount = (double)budget.OtherAmount;
+
+            other.Transactions = (from t in new FinanceContext().Transactions
+                                  where !categoriesInBudget.Contains(t.CategoryID)
+                                     && !excludedCategories.Contains(t.Category.CategoryName)
+                                     && t.Date >= budget.BeginDate
+                                     && t.Date <= budget.EndDate
+                                  select new SimpleTransaction
+                                  {
+                                      TransactionID = t.TransactionID,
+                                      CategoryID = t.CategoryID,
+                                      CategoryName = t.Category.CategoryName,
+                                      Date = t.Date,
+                                      Description = t.Description,
+                                      Amount = t.Amount
+                                  }).ToArray();
+
+            //Convert the date in all the transactions to shortdates strings
+            foreach (var item in other.Transactions)
             {
                 item.DateString = item.Date.ToShortDateString();
             }
 
-            var totalAmountBudgeted = budgetcategories.Sum(c => c.Amount);
-            var totalAmountUsed = allBudgetTransactions.Sum(t => t.Amount) * -1;
-            var totalAmountRemaining = totalAmountBudgeted - totalAmountUsed;
+            other.UsedAmount = (double)other.Transactions.Sum(t => t.Amount) * -1;
 
-            List<int> categoriesInBudget = (from bc in budgetcategories
-                                            select bc.CategoryID).ToList();
+            other.UsedAmountPerPeriod = other.UsedAmount;
 
+            other.RemainingAmount = other.Amount - other.UsedAmount;
 
+            budgetCategories[1] = other;
 
-            var otherTransactions = (from t in new FinanceContext().Transactions
-                                     where !categoriesInBudget.Contains(t.CategoryID) && !excludedCategories.Contains(t.Category.CategoryName)
-                                     select new SimpleTransaction
-                                     {
-                                         TransactionID = t.TransactionID,
-                                         CategoryID = t.CategoryID,
-                                         CategoryName = t.Category.CategoryName,
-                                         Date = t.Date,
-                                         Description = t.Description,
-                                         Amount = t.Amount
-                                     }).ToArray();
+            /* Create the 'Total' category and and it to the array budgetCategories.  As part of 
+             * creation add an array of 'other' transactions to the 'other' category and make the 
+             * budget type a One-Time budget.
+             */
 
-            var otherAmount = otherTransactions.Sum(t => t.Amount) * -1;
+            BudgetCategorySimple total = new BudgetCategorySimple();
 
-            categoryTransactionDictionary.Add("Other", otherTransactions);
-            categoryTransactionDictionary.Add("All", allBudgetTransactions);
-            decimal[] allusedremaining = { totalAmountUsed, totalAmountRemaining };
-            nameAmountsDictionary.Add("All", allusedremaining );
+            total.CategoryName = "Total";
+            total.CategoryID = -1;
 
-            usedAmounts[0] = otherAmount;
-            categoryNames[0] = "Other";
+            total.BudgetType = "One-Time";
 
-            for (int i = 1; i < budgetcategories.Count() + 1; i++)
+            total.Amount = (double)budget.OtherAmount;
+
+            total.Transactions = (from t in new FinanceContext().Transactions
+                                  where !excludedCategories.Contains(t.Category.CategoryName)
+                                     && t.Date >= budget.BeginDate
+                                     && t.Date <= budget.EndDate
+                                  select new SimpleTransaction
+                                  {
+                                      TransactionID = t.TransactionID,
+                                      CategoryID = t.CategoryID,
+                                      CategoryName = t.Category.CategoryName,
+                                      Date = t.Date,
+                                      Description = t.Description,
+                                      Amount = t.Amount
+                                  }).ToArray();
+
+            //Convert the date in all the transactions to shortdates strings
+            foreach (var item in total.Transactions)
             {
-                usedAmounts[i] = (budgetcategories[i - 1].UsedAmount);
-                categoryNames[i] = budgetcategories[i - 1].Category.CategoryName;
-
-                decimal[] usedremaining = { budgetcategories[i - 1].UsedAmount, budgetcategories[i - 1].RemainingAmount };
-                nameAmountsDictionary.Add(budgetcategories[i - 1].Category.CategoryName, usedremaining);
-
-                var categoryTransations = allBudgetTransactions.Where(t => t.CategoryID == budgetcategories[i - 1].CategoryID).ToArray();
-                categoryTransactionDictionary.Add(budgetcategories[i - 1].Category.CategoryName, categoryTransations);
-
+                if (categoriesInBudget.Contains(item.CategoryID))
+                {
+                    item.Tag = item.CategoryName;
+                }
+                else
+                {
+                    item.Tag = "Other";
+                }
+                item.DateString = item.Date.ToShortDateString();
             }
 
-            ViewBag.usedAmounts = usedAmounts;
-            ViewBag.categoryNames = categoryNames;
-            ViewBag.nameAmountsDictionary = nameAmountsDictionary;
-            ViewBag.categoryTransactionDictionary = categoryTransactionDictionary;
+            total.UsedAmount = (double)total.Transactions.Sum(t => t.Amount) * -1;
 
-            //var budgetcategories = db.BudgetCategories.Where(b => b.BudgetID == id).ToList();
+            total.UsedAmountPerPeriod = total.UsedAmount;
 
+            total.RemainingAmount = total.Amount - total.UsedAmount;
 
+            budgetCategories[0] = total;
+
+            //Add all the other information from all the other BudgetCatgories into the arrary of simple budget categories
+            for (int i = 0; i < bc.Length; i++)
+            {
+                //Add the new category to the array
+                budgetCategories[i + 2] = createSimpleBudgetCategory(bc[i]);
+            }
+
+            //Return the array of simple budget categories as a json object
+            return Json(JsonConvert.SerializeObject(budgetCategories));
+        }
+
+        //Get: Budgets/View
+        public ActionResult View(int? id)
+        {
+            ViewBag.budget = db.Budgets.Find(id);
+
+            //Create variables for all incomes related with the budget.  Separate into salary incomes and hourly incomes
+            var HourlyIncomes = db.Incomes.Where(i => i.BudgetID == id && i.IncomeType.Description == "Hourly").ToList();
+            var SalaryIncomes = db.Incomes.Where(i => i.BudgetID == id && i.IncomeType.Description == "Salary").ToList();
+
+            //Calculate expected income.  First sum up expected hourly income remaining and then add salaries
+            var expectedIncome = HourlyIncomes.Sum(i => (i.HoursPerWeek * i.Wage * 4));//(decimal)weeksRemaining));
+            expectedIncome += SalaryIncomes.Sum(i => (i.Wage));
+
+            //Add incomes to Viewbag
+            ViewBag.HourlyIncomes = HourlyIncomes;
+            ViewBag.SalaryIncomes = SalaryIncomes;
+
+            //Add related goals to the viewbag
+            ViewBag.Goals = db.Goals.Where(g => g.BudgetID == id).ToArray();
 
             //Add categories to ViewBag
             ViewBag.Categories = db.Categories.ToList();
 
+            //Add Types to the ViewBag
+            ViewBag.BudgetTypes = db.BudgetTypes.ToList();
 
-
-            //Add a select list of the categories
-
-            return View(budgetcategories);
+            return View();
         }
 
         [HttpPost]
@@ -261,7 +237,12 @@ namespace PersonalFinanceApplication.Controllers
             db.BudgetCategories.Add(budgetcategory);
             db.SaveChanges();
             var categoryName = db.Categories.Find(budgetcategory.CategoryID).CategoryName;
-            return Json(categoryName);
+
+            var budget = db.Budgets.Find(budgetcategory.BudgetID);
+
+            var returnCategory = createSimpleBudgetCategory(budgetcategory);
+            
+            return Json(returnCategory);
         }
 
         [HttpPost]
@@ -314,27 +295,12 @@ namespace PersonalFinanceApplication.Controllers
         {
             var budgetsummary = new BudgetSummary();
 
-            budgetsummary.ExpectedIncome = db.Budgets.Find(budget.BudgetID).ExpectedIncome;
+            budgetsummary.ExpectedIncome = db.Budgets.Find(budget.BudgetID).OtherAmount;
             budgetsummary.Expenditures = db.BudgetCategories.Where(bc => bc.BudgetID == budget.BudgetID).Sum(bc => bc.Amount);
             budgetsummary.Goals = db.Goals.Where(g => g.BudgetID == budget.BudgetID).Sum(g => g.GoalAmount);
             budgetsummary.Remaining = budgetsummary.ExpectedIncome - budgetsummary.Expenditures - budgetsummary.Goals;
 
             return Json(budgetsummary);
-        }
-
-        // GET: Budgets/Details/5
-        public ActionResult Details(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Budget budget = db.Budgets.Find(id);
-            if (budget == null)
-            {
-                return HttpNotFound();
-            }
-            return View(budget);
         }
 
         // GET: Budgets/Create
@@ -360,40 +326,125 @@ namespace PersonalFinanceApplication.Controllers
             return View(budget);
         }
 
-
-        // GET: Budgets/Delete/5
-        public ActionResult Delete(int? id)
+        public BudgetCategorySimple createSimpleBudgetCategory(BudgetCategory bc)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Budget budget = db.Budgets.Find(id);
-            if (budget == null)
-            {
-                return HttpNotFound();
-            }
-            return View(budget);
-        }
+            //Get the budget from the database
+            var budget = db.Budgets.Find(bc.BudgetID);
 
-        // POST: Budgets/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
-        {
-            Budget budget = db.Budgets.Find(id);
-            db.Budgets.Remove(budget);
-            db.SaveChanges();
-            return RedirectToAction("Index");
-        }
+            /* 
+             * Determine how much time is left and how much time has past in the budget in 
+             * months, weeks, and days.  These valuse will be used in determining expected 
+             * income (for hourly jobs) and the remaining budget for weekly and monthly budget 
+             * categories.
+             */
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
+            //Today
+            DateTime today = DateTime.Today;
+
+            //Determine how many months, weeks, and days are past
+            TimeSpan pastTS = new TimeSpan();
+            if (today > budget.BeginDate)
             {
-                db.Dispose();
+                //If the the budget is already started, calculate how much time is past in the budget
+                pastTS = today - budget.BeginDate;
             }
-            base.Dispose(disposing);
+            else
+            {
+                pastTS = TimeSpan.Zero;
+            }
+
+            double daysPast = pastTS.Days;
+            double weeksPast = daysPast / 7;
+            double monthsPast = daysPast / 30.42; //Avg days in a month is 30.42 in a non-leap year.  
+
+
+            //Determine how many months, weeks, and days are left
+            TimeSpan remainingTS = new TimeSpan();
+            if (today > budget.BeginDate)
+            {
+                //If the the budget is already started, calculate how much time is left in the budget
+                remainingTS = budget.EndDate - today;
+            }
+            else
+            {
+                remainingTS = budget.EndDate - budget.BeginDate;
+            }
+
+            double daysRemaining = remainingTS.Days;
+            double weeksRemaining = daysRemaining / 7;
+            double monthsRemaining = daysRemaining / 30.42; //Avg days in a month is 30.42 in a non-leap year.  
+
+
+            //Create the new simple budget category
+            BudgetCategorySimple newCategory = new BudgetCategorySimple();
+
+            //Add the category name
+            newCategory.CategoryID = bc.CategoryID;
+            newCategory.CategoryName = bc.Category.CategoryName;
+
+            //Add the budget type
+            var bt = db.BudgetTypes.Find(bc.BudgetTypeID);
+            newCategory.BudgetType = bt.Description;
+
+            //Add the amount
+            newCategory.Amount = (double)bc.Amount;
+
+            //Add all the transactions with the same category and within the budget dates
+            int CategoryID = bc.CategoryID;
+            newCategory.Transactions = (from t in new FinanceContext().Transactions
+                                        where t.CategoryID == CategoryID
+                                           && t.Date >= budget.BeginDate
+                                           && t.Date <= budget.EndDate
+                                        select new SimpleTransaction
+                                        {
+                                            TransactionID = t.TransactionID,
+                                            CategoryID = t.CategoryID,
+                                            CategoryName = t.Category.CategoryName,
+                                            Date = t.Date,
+                                            Description = t.Description,
+                                            Amount = t.Amount,
+                                            Tag = t.Category.CategoryName
+                                        }).ToArray();
+
+            //Convert the date in all the transactions to shortdates strings
+            foreach (var item in newCategory.Transactions)
+            {
+                item.DateString = item.Date.ToShortDateString();
+            }
+
+            //Add the used amount
+            newCategory.UsedAmount = (double)newCategory.Transactions.Sum(t => t.Amount) * -1;
+
+            //Calculate the used amount per period
+            switch (newCategory.BudgetType)
+            {
+                case "Weekly":
+                    newCategory.UsedAmountPerPeriod = newCategory.UsedAmount / weeksPast;
+                    break;
+                case "Monthly":
+                    newCategory.UsedAmountPerPeriod = newCategory.UsedAmount / monthsPast;
+                    break;
+                case "One-Time":
+                    newCategory.UsedAmountPerPeriod = newCategory.UsedAmount;
+                    break;
+            }
+
+            //Calculate the remaining amount
+            switch (newCategory.BudgetType)
+            {
+                case "Weekly":
+                    newCategory.RemainingAmount = newCategory.Amount * weeksRemaining;
+                    break;
+                case "Monthly":
+                    newCategory.RemainingAmount = newCategory.Amount * monthsRemaining;
+                    break;
+                case "One-Time":
+                    newCategory.RemainingAmount = newCategory.Amount - newCategory.UsedAmount;
+                    break;
+            }
+
+            return newCategory;
         }
     }
 }
+

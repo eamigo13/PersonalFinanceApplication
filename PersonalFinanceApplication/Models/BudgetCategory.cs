@@ -18,16 +18,17 @@ namespace PersonalFinanceApplication.Models
         [Column(Order = 2)]
         public int CategoryID { get; set; }
 
+        public int BudgetTypeID { get; set; }
+
         public decimal Amount { get; set; }
-
-        public decimal UsedAmount { get; set; }
-
-        public decimal RemainingAmount { get; set; }
 
         [ForeignKey("BudgetID")]
         public virtual Budget Budget { get; set; }
 
         [ForeignKey("CategoryID")]
         public virtual Category Category { get; set; }
+
+        [ForeignKey("BudgetTypeID")]
+        public virtual BudgetType BudgetType { get; set; }
     }
 }

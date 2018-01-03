@@ -10,13 +10,14 @@ ALTER TABLE Account DROP CONSTRAINT FK_Account_AccountType;
 ALTER TABLE Category DROP CONSTRAINT FK_Category_CategoryType;
 ALTER TABLE BudgetCategory DROP CONSTRAINT FK_BudgetCategory_Budget;
 ALTER TABLE BudgetCategory DROP CONSTRAINT FK_BudgetCategory_Category;
+ALTER TABLE BudgetCategory DROP CONSTRAINT FK_BudgetCategory_BudgetType;
 ALTER TABLE VendorCategory DROP CONSTRAINT FK_VendorCategory_Vendor;
 ALTER TABLE VendorCategory DROP CONSTRAINT FK_VendorCategory_Category;
 ALTER TABLE VendorAbbrev DROP CONSTRAINT FK_VendorAbbrev_Vendor;
 ALTER TABLE Goal DROP CONSTRAINT FK_Goal_Account;
 ALTER TABLE Goal DROP CONSTRAINT FK_Goal_Budget;
 ALTER TABLE Income DROP CONSTRAINT FK_Income_IncomeType;
-ALTER TABLE Income DROP CONSTRAINT FK_Income_Budget FOREIGN KEY (BudgetID) REFERENCES Budget(BudgetID);
+ALTER TABLE Income DROP CONSTRAINT FK_Income_Budget;
 
 GO
 
@@ -42,6 +43,7 @@ DROP TABLE VendorAbbrev;
 DROP TABLE VendorCategory;
 DROP TABLE [Transaction];
 DROP TABLE Budget;
+DROP TABLE BudgetType;
 DROP TABLE BudgetCategory;
 DROP TABLE Goal;
 DROP TABLE IncomeType;
@@ -130,19 +132,27 @@ CREATE TABLE [Budget] (
   [Description] nvarchar(200),
   [BeginDate] date NOT NULL,
   [EndDate] date NOT NULL,
-  [ExpectedIncome] decimal(18,2),
+  [OtherAmount] decimal(18,2),
   CONSTRAINT PK_Budget PRIMARY KEY ([BudgetID]),
 );
+
+CREATE TABLE [BudgetType](
+	[BudgetTypeID] int identity(0,1),
+	[Description] nvarchar(50)
+	CONSTRAINT PK_BudgetType PRIMARY KEY ([BudgetTypeID]),
+);
+
+INSERT INTO BudgetType VALUES ('Weekly'), ('Monthly'), ('One-Time');
 
 CREATE TABLE [BudgetCategory] (
   [BudgetID] int,
   [CategoryID] int,
+  [BudgetTypeID] int,
   [Amount] decimal(18,2),
-  [UsedAmount] decimal(18,2),
-  [RemainingAmount] decimal(18,2),
   PRIMARY KEY ([BudgetID], [CategoryID]),
   CONSTRAINT FK_BudgetCategory_Budget FOREIGN KEY (BudgetID) REFERENCES Budget(BudgetID),
-  CONSTRAINT FK_BudgetCategory_Category FOREIGN KEY (CategoryID) REFERENCES Category(CategoryID)
+  CONSTRAINT FK_BudgetCategory_Category FOREIGN KEY (CategoryID) REFERENCES Category(CategoryID),
+  CONSTRAINT FK_BudgetCategory_BudgetType FOREIGN KEY (BudgetTypeID) REFERENCES [BudgetType]([BudgetTypeID])
 );
 
 CREATE TABLE [VendorCategory] (
@@ -192,6 +202,7 @@ CREATE TABLE [Income] (
 	[IncomeTypeID] int,
 	[HoursPerWeek] int,
 	[Wage] decimal(18,2),
+	[IncomeName] nvarchar(50),
 	CONSTRAINT PK_Income PRIMARY KEY ([IncomeID]),
 	CONSTRAINT FK_Income_IncomeType FOREIGN KEY (IncomeTypeID) REFERENCES IncomeType(IncomeTypeID),
 	CONSTRAINT FK_Income_Budget FOREIGN KEY (BudgetID) REFERENCES Budget(BudgetID),
