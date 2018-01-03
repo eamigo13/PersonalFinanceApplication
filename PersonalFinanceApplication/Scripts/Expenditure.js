@@ -27,6 +27,11 @@ function getExpenditures(budgetid)
 
             //Add the categories to the category tab
             addCategories();
+            
+            //generate donut charts
+            generateDonutCharts();
+            showDonutChart(categories[0]);
+            
         },
         failure: function (response) {
             alert("Failure");
@@ -35,6 +40,49 @@ function getExpenditures(budgetid)
             alert("Error");
         }
     });
+}
+
+function showDonutChart(category) {
+    $('.donutcanvas').hide();
+    $('#donutcanvas' + category.CategoryID).show();
+    $('#donuttitle').text(category.CategoryName);
+    category.DonutChart.update();
+}
+
+function generateDonutCharts() {
+    for(var i = 0; i < categories.length; i++)
+    {
+        //Append a canvas for each donut chart
+        var html = "<canvas id=\"donutcanvas" + categories[i].CategoryID + "\" class=\"donutcanvas\"></canvas>"
+        $('#donutdiv').append(html);
+
+        //Create a donut chart and append it to the associated category object
+
+        //Create an array of labels
+        var donutlabels = ["Used", "Remaining"];
+
+        //Create array of data
+        var donutvalues = [categories[i].UsedAmountThisPeriod, categories[i].RemainingAmountThisPeriod]
+
+        //Create an array of colors
+        var donutcolors = ["#9d9fa0", "#37a848"]; //gray for unused and green for used
+
+        //Add the values, labels, and colors into a data object to be used by the piechart
+        var data = {
+            labels: donutlabels,
+            datasets: [{
+                data: donutvalues,
+                backgroundColor: donutcolors
+            }]
+        };
+
+        //create the elements necessary to create a pie chart on on the 'piecanvas' div
+        var ctx = document.getElementById('donutcanvas' + categories[i].CategoryID).getContext("2d");
+        categories[i].DonutChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: data,
+        }); 
+    }
 }
 
 function updateBudgetCategory(categoryid, amount) {
@@ -52,7 +100,7 @@ function updateBudgetCategory(categoryid, amount) {
         dataType: "json",
         contentType: 'application/json; charset=utf-8',
         success: function (response) {
-            alert("Category Successfully Updated");
+            //alert("Category Successfully Updated");
         },
         failure: function (response) {
             alert("Failure");
@@ -77,7 +125,7 @@ function deleteBudgetCategory(categoryid) {
         dataType: "json",
         contentType: 'application/json; charset=utf-8',
         success: function (response) {
-            alert("Category Successfully Deleted");
+            //alert("Category Successfully Deleted");
         },
         failure: function (response) {
             alert("Failure");
@@ -230,6 +278,11 @@ function addPieChart(categories) {
             //Hide all transaction rows and then show transaction rows associated with the category clicked.
             $('.transactionrow').hide();
             $('.' + label).show();
+
+            //Show the appropriate donut chart
+            var category = categories.find(function (obj) { return obj.CategoryName == label; });
+            showDonutChart(category);
+            
         }
     };
 }
@@ -273,6 +326,13 @@ function getRandomColor() {
 }
 
 $(document).ready(function () {
+
+    $('#showallbtn').click(function () {
+        $('.transactionrow').show();
+        //Show the appropriate donut chart
+        var category = categories.find(function (obj) { return obj.CategoryName == "Total"; });
+        showDonutChart(category);
+    });
 
     $('#addCategoryBtn').click(function () {
         var newCategory = {

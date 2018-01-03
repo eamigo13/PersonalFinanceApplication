@@ -98,6 +98,9 @@ namespace PersonalFinanceApplication.Controllers
 
             BudgetCategorySimple[] budgetCategories = new BudgetCategorySimple[bc.Length + 2];
 
+            //Add a blank budgetcategory to the first index in the array.  This will be written over before the end of the program
+            budgetCategories[0] = new BudgetCategorySimple();
+
             /* Create the 'other' category and and it to the array budgetCategories.  As part of 
              * creation add an array of 'other' transactions to the 'other' category and make the 
              * budget type a One-Time budget.
@@ -106,7 +109,7 @@ namespace PersonalFinanceApplication.Controllers
             BudgetCategorySimple other = new BudgetCategorySimple();
 
             other.CategoryName = "Other";
-            other.CategoryID = -1;
+            other.CategoryID = -2;
 
             other.BudgetType = "One-Time";
 
@@ -134,12 +137,23 @@ namespace PersonalFinanceApplication.Controllers
             }
 
             other.UsedAmount = (double)other.Transactions.Sum(t => t.Amount) * -1;
+            other.UsedAmountThisPeriod = other.UsedAmount;
 
             other.UsedAmountPerPeriod = other.UsedAmount;
 
             other.RemainingAmount = other.Amount - other.UsedAmount;
+            other.RemainingAmountThisPeriod = other.RemainingAmount;
 
             budgetCategories[1] = other;
+
+            
+
+            //Add all the other information from all the other BudgetCatgories into the arrary of simple budget categories
+            for (int i = 0; i < bc.Length; i++)
+            {
+                //Add the new category to the array
+                budgetCategories[i + 2] = createSimpleBudgetCategory(bc[i]);
+            }
 
             /* Create the 'Total' category and and it to the array budgetCategories.  As part of 
              * creation add an array of 'other' transactions to the 'other' category and make the 
@@ -183,20 +197,15 @@ namespace PersonalFinanceApplication.Controllers
                 item.DateString = item.Date.ToShortDateString();
             }
 
-            total.UsedAmount = (double)total.Transactions.Sum(t => t.Amount) * -1;
+            total.UsedAmount = budgetCategories.Sum(c => c.UsedAmount);
+            total.UsedAmountThisPeriod = total.UsedAmount;
 
             total.UsedAmountPerPeriod = total.UsedAmount;
 
-            total.RemainingAmount = total.Amount - total.UsedAmount;
+            total.RemainingAmount = budgetCategories.Sum(c => c.RemainingAmount);
+            total.RemainingAmountThisPeriod = total.RemainingAmount;
 
             budgetCategories[0] = total;
-
-            //Add all the other information from all the other BudgetCatgories into the arrary of simple budget categories
-            for (int i = 0; i < bc.Length; i++)
-            {
-                //Add the new category to the array
-                budgetCategories[i + 2] = createSimpleBudgetCategory(bc[i]);
-            }
 
             //Return the array of simple budget categories as a json object
             return Json(JsonConvert.SerializeObject(budgetCategories));
@@ -415,6 +424,20 @@ namespace PersonalFinanceApplication.Controllers
             //Add the used amount
             newCategory.UsedAmount = (double)newCategory.Transactions.Sum(t => t.Amount) * -1;
 
+            //Calculate the used amount this period
+            switch (newCategory.BudgetType)
+            {
+                case "Weekly":
+                    newCategory.UsedAmountThisPeriod = (double)newCategory.Transactions.Where(t => t.Date >= today.AddDays(-7)).Sum(t => t.Amount) * -1;
+                    break;
+                case "Monthly":
+                    newCategory.UsedAmountThisPeriod = (double)newCategory.Transactions.Where(t => t.Date.Month == today.Month).Sum(t => t.Amount) * -1;
+                    break;
+                case "One-Time":
+                    newCategory.UsedAmountThisPeriod = newCategory.UsedAmount;
+                    break;
+            }
+
             //Calculate the used amount per period
             switch (newCategory.BudgetType)
             {
@@ -442,6 +465,9 @@ namespace PersonalFinanceApplication.Controllers
                     newCategory.RemainingAmount = newCategory.Amount - newCategory.UsedAmount;
                     break;
             }
+
+            //Calculate remaining amount this period
+            newCategory.RemainingAmountThisPeriod = newCategory.Amount - newCategory.UsedAmountThisPeriod;
 
             return newCategory;
         }

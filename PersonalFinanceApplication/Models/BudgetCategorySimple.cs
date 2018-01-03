@@ -12,8 +12,10 @@ namespace PersonalFinanceApplication.Models
         public string BudgetType { get; set; }
         public double Amount { get; set; }
         public double UsedAmount { get; set; }
+        public double UsedAmountThisPeriod { get; set; }
         public double UsedAmountPerPeriod { get; set; }
         public double RemainingAmount { get; set; }
+        public double RemainingAmountThisPeriod { get; set; }
         public SimpleTransaction[] Transactions { get; set; }
     }
 }
