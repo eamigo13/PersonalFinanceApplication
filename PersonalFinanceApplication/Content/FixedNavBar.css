@@ -1,10 +1,10 @@
 ﻿/* The navigation bar */
 .bottomnavbar {
     overflow: hidden;
-    background-color: #333;
+    background-color: #777a7a;
     position: fixed; /* Set the navbar to fixed position */
     bottom: 0; /* Position the navbar at the bottom of the page */
-    width: 90.2%;
+    width: 100%;
     z-index: 10;
     color: #f2f2f2;
 }

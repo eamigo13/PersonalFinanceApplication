@@ -16,10 +16,26 @@ namespace PersonalFinanceApplication.Controllers
     {
         private FinanceContext db = new FinanceContext();
 
-        // GET: Budgets
+        //Get: Budgets
         public ActionResult Index()
         {
-            return View(db.Budgets.ToList());
+            Budget budget = db.Budgets.Find(0);
+
+            ViewBag.begindate = budget.BeginDate.ToString("yyyy-MM-dd");
+            ViewBag.enddate = budget.EndDate.ToString("yyyy-MM-dd");
+
+            ViewBag.budget = budget;
+
+            //Add categories to ViewBag
+            ViewBag.Categories = db.Categories.ToList();
+
+            //Add Types to the ViewBag
+            ViewBag.BudgetTypes = db.BudgetTypes.ToList();
+
+            //Add Income Types to the ViewBag
+            ViewBag.IncomeTypes = db.IncomeTypes.ToList();
+
+            return View();
         }
 
         //Get: Budgets/Expenditures
@@ -211,33 +227,24 @@ namespace PersonalFinanceApplication.Controllers
             return Json(JsonConvert.SerializeObject(budgetCategories));
         }
 
-        //Get: Budgets/View
-        public ActionResult View(int? id)
+        
+
+        public JsonResult GetGoals(Budget b)
         {
-            ViewBag.budget = db.Budgets.Find(id);
+            var goals = db.Goals.Where(g => g.BudgetID == b.BudgetID);
+            return Json(JsonConvert.SerializeObject(goals));
+        }
 
-            //Create variables for all incomes related with the budget.  Separate into salary incomes and hourly incomes
-            var HourlyIncomes = db.Incomes.Where(i => i.BudgetID == id && i.IncomeType.Description == "Hourly").ToList();
-            var SalaryIncomes = db.Incomes.Where(i => i.BudgetID == id && i.IncomeType.Description == "Salary").ToList();
+        public JsonResult GetIncomes(Budget b)
+        {
+            var incomes = db.Incomes.Where(i => i.BudgetID == b.BudgetID).ToList();
+            var simpleincomes = new IncomeSimple[incomes.Count()];
 
-            //Calculate expected income.  First sum up expected hourly income remaining and then add salaries
-            var expectedIncome = HourlyIncomes.Sum(i => (i.HoursPerWeek * i.Wage * 4));//(decimal)weeksRemaining));
-            expectedIncome += SalaryIncomes.Sum(i => (i.Wage));
-
-            //Add incomes to Viewbag
-            ViewBag.HourlyIncomes = HourlyIncomes;
-            ViewBag.SalaryIncomes = SalaryIncomes;
-
-            //Add related goals to the viewbag
-            ViewBag.Goals = db.Goals.Where(g => g.BudgetID == id).ToArray();
-
-            //Add categories to ViewBag
-            ViewBag.Categories = db.Categories.ToList();
-
-            //Add Types to the ViewBag
-            ViewBag.BudgetTypes = db.BudgetTypes.ToList();
-
-            return View();
+            for(int i=0; i<incomes.Count(); i++)
+            {
+                simpleincomes[i] = createSimpleIncome(incomes[i]);
+            }
+            return Json(JsonConvert.SerializeObject(simpleincomes));
         }
 
         [HttpPost]
@@ -279,7 +286,7 @@ namespace PersonalFinanceApplication.Controllers
         {
             db.Goals.Add(goal);
             db.SaveChanges();
-            return Json(goal.GoalID);
+            return Json(goal);
         }
 
         [HttpPost]
@@ -303,14 +310,50 @@ namespace PersonalFinanceApplication.Controllers
         }
 
         [HttpPost]
-        public JsonResult GetBudgetSummary(Budget budget)
+        public JsonResult AddIncome(Income income)
         {
+            db.Incomes.Add(income);
+            db.SaveChanges();
+
+            var returnincome = createSimpleIncome(db.Incomes.Find(income.IncomeID));
+            return Json(returnincome);
+        }
+
+        [HttpPost]
+        public JsonResult UpdateIncome(Income updatedincome)
+        {
+            var income = db.Incomes.Find(updatedincome.IncomeID);
+            income.Wage = updatedincome.Wage;
+            income.HoursPerWeek = updatedincome.HoursPerWeek;
+            db.Entry(income).State = EntityState.Modified;
+            db.SaveChanges();
+            var returnincome = createSimpleIncome(income);
+            return Json(returnincome);
+        }
+
+        [HttpPost]
+        public JsonResult DeleteIncome(Income income)
+        {
+            var deletedincome = db.Incomes.Find(income.IncomeID);
+            db.Incomes.Remove(deletedincome);
+            db.SaveChanges();
+            var returnincome = createSimpleIncome(deletedincome);
+            return Json(returnincome);
+        }
+
+        [HttpPost]
+        public JsonResult GetBudgetSummary(Budget budget)       
+        {
+
             var budgetsummary = new BudgetSummary();
 
-            budgetsummary.ExpectedIncome = db.Budgets.Find(budget.BudgetID).OtherAmount;
-            budgetsummary.Expenditures = db.BudgetCategories.Where(bc => bc.BudgetID == budget.BudgetID).Sum(bc => bc.Amount);
-            budgetsummary.Goals = db.Goals.Where(g => g.BudgetID == budget.BudgetID).Sum(g => g.GoalAmount);
-            budgetsummary.Remaining = budgetsummary.ExpectedIncome - budgetsummary.Expenditures - budgetsummary.Goals;
+            //Sum up the incomes of all incomes associated with the budget
+
+
+            //budgetsummary.ExpectedIncome = db.Budgets.Find(budget.BudgetID).OtherAmount;
+            //budgetsummary.Expenditures = db.BudgetCategories.Where(bc => bc.BudgetID == budget.BudgetID).Sum(bc => bc.Amount);
+            //budgetsummary.Goals = db.Goals.Where(g => g.BudgetID == budget.BudgetID).Sum(g => g.CurrentAmount);
+            //budgetsummary.Remaining = budgetsummary.ExpectedIncome - budgetsummary.Expenditures - budgetsummary.Goals;
 
             return Json(budgetsummary);
         }
@@ -336,6 +379,21 @@ namespace PersonalFinanceApplication.Controllers
             }
 
             return View(budget);
+        }
+
+        public IncomeSimple createSimpleIncome(Income i)
+        {
+            IncomeSimple income = new IncomeSimple();
+
+            income.IncomeID = i.IncomeID;
+            income.IncomeName = i.IncomeName;
+            income.BudgetID = i.BudgetID;
+            income.IncomeTypeID = i.IncomeTypeID;
+            income.HoursPerWeek = i.HoursPerWeek;
+            income.Wage = i.Wage;
+            income.IncomeTypeDescription = db.IncomeTypes.Find(i.IncomeTypeID).Description;
+
+            return income;
         }
 
         public BudgetCategorySimple createSimpleBudgetCategory(BudgetCategory bc)

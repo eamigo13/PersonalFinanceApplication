@@ -103,6 +103,9 @@ function generateDonutChart(category) {
         type: 'doughnut',
         data: data,
     }); 
+
+    //Hide the new donut chart
+    $('#donutcanvas' + category.CategoryID).hide();
 }
 
 function updateBudgetCategory(categoryid, amount) {

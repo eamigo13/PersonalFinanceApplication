@@ -282,12 +282,15 @@
     <Content Include="Content\bootstrap.css.map" />
     <Content Include="Content\bootstrap-theme.min.css.map" />
     <Content Include="Content\bootstrap-theme.css.map" />
+    <None Include="Properties\PublishProfiles\mcdanielfinance - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-3.2.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\Chart.js" />
     <Content Include="Scripts\Chart.min.js" />
     <Content Include="Scripts\Expenditure.js" />
+    <Content Include="Scripts\Goals.js" />
+    <Content Include="Scripts\Incomes.js" />
     <Content Include="Scripts\jquery-3.2.1.js" />
     <Content Include="Scripts\jquery-3.2.1.min.js" />
     <Content Include="Scripts\jquery-3.2.1.slim.js" />
@@ -305,7 +308,10 @@
     <Content Include="Scripts\respond.matchmedia.addListener.min.js" />
     <Content Include="Scripts\respond.min.js" />
     <Content Include="Scripts\Tabs.js" />
-    <Content Include="Web.config" />
+    <Content Include="Scripts\UpdateBudgetSummary.js" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
@@ -356,15 +362,13 @@
     <Content Include="Views\Budget\Create.cshtml" />
     <Content Include="Views\Budget\Delete.cshtml" />
     <Content Include="Views\Budget\Details.cshtml" />
-    <Content Include="Views\Budget\Index.cshtml" />
     <Content Include="Views\BudgetCategories\Create.cshtml" />
     <Content Include="Views\BudgetCategories\Delete.cshtml" />
     <Content Include="Views\BudgetCategories\Details.cshtml" />
     <Content Include="Views\BudgetCategories\Edit.cshtml" />
     <Content Include="Views\BudgetCategories\Index.cshtml" />
     <Content Include="Views\Budget\Edit.cshtml" />
-    <Content Include="Views\Budget\ViewOld.cshtml" />
-    <Content Include="Views\Budget\View.cshtml" />
+    <Content Include="Views\Budget\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

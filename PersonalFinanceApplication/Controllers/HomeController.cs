@@ -12,7 +12,7 @@ namespace PersonalFinanceApplication.Controllers
     {
         public ActionResult Index()
         {
-            return RedirectToAction("Index", "Upload");
+            return RedirectToAction("Index", "Budget");
         }
 
         public ActionResult About()

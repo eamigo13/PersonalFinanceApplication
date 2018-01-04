@@ -19,13 +19,6 @@ namespace PersonalFinanceApplication.Models
         public int BudgetID { get; set; }
 
         [Required]
-        [StringLength(50)]
-        public string BudgetName { get; set; }
-
-        [StringLength(200)]
-        public string Description { get; set; }
-
-        [Required]
         public DateTime BeginDate { get; set; }
 
         [Required]

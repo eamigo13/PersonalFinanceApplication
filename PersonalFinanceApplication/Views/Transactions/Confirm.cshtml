@@ -278,9 +278,7 @@
 </div>
 
 <div id="main">
-
-    <h2>Confirm</h2>
-    <button class="btn btn-success pull-right" id="ConfirmAll">Confirm All</button>
+    
     <br />
     <hr />
 
@@ -294,11 +292,14 @@
         <div class="col-md-1">
             <b>Amount</b>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-3">
             <b>Vendor</b>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-3">
             <b>Category</b>
+        </div>
+        <div style="float: right;" class="col-md-1">
+            <button class="btn btn-success pull-right" id="ConfirmAll">Confirm All</button>
         </div>
     </div>
     <hr />
@@ -343,19 +344,18 @@
             <div class="col-md-1">
                 @Html.DisplayFor(modelItem => transaction.Amount)
             </div>
-            <div class="col-md-2">
-                @Html.DropDownList(transaction.TransactionID + "Vendor", new SelectList(ViewBag.Vendors, "VendorID", "VendorName", transaction.Vendor.VendorID), new { @id = "Vendor-" + transaction.TransactionID })
-                <br /><a class="AddVendor" id="AddVendor-@transaction.TransactionID" href="">Add Vendor</a>
+            <div class="col-md-3">
+                @Html.DropDownList(transaction.TransactionID + "Vendor", new SelectList(ViewBag.Vendors, "VendorID", "VendorName", transaction.Vendor.VendorID), new { @class = "form-control", @id = "Vendor-" + transaction.TransactionID })
+                <a class="AddVendor" id="AddVendor-@transaction.TransactionID" href="">Add Vendor</a>
             </div>
-            <div class="col-md-2">
-                @Html.DropDownList(transaction.TransactionID + "Category", new SelectList(ViewBag.Categories, "CategoryID", "CategoryName", transaction.Category.CategoryID), new { @id = "Category-" + transaction.TransactionID })
-                <br /><a class="AddCategory" id="AddCategory-@transaction.TransactionID" href="">Add Category</a>
+            <div class="col-md-3">
+                @Html.DropDownList(transaction.TransactionID + "Category", new SelectList(ViewBag.Categories, "CategoryID", "CategoryName", transaction.Category.CategoryID), new { @class = "form-control", @id = "Category-" + transaction.TransactionID })
+                <a class="AddCategory" id="AddCategory-@transaction.TransactionID" href="">Add Category</a>
             </div>
             <div class="col-md-1">
                 <input type="button" value="Confirm" id="Confirm-@transaction.TransactionID" class="btn btn-success" />
             </div>
             <div class="col-md-1">
-                <a class="btn btn-default" href="@Url.Action("Details", "Transactions", new { id = transaction.TransactionID })">Details</a>
             </div>
             <div class="col-md-1">
                 

@@ -9,6 +9,7 @@ namespace PersonalFinanceApplication.Models
     public class IncomeSimple
     {
         public int IncomeID { get; set; }
+        public string IncomeName { get; set; }
         public int BudgetID { get; set; }
         public int IncomeTypeID { get; set; }
         public int HoursPerWeek { get; set; }

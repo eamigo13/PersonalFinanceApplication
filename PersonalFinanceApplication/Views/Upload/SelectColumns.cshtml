@@ -14,28 +14,28 @@
     <div class="form-group">
         <p>Date</p>
         <div>
-            @Html.DropDownList("DateColumn", new SelectList(ViewBag.datecolumns, "ColumnNumber", "ExampleValue"))
+            @Html.DropDownList("DateColumn", new SelectList(ViewBag.datecolumns, "ColumnNumber", "ExampleValue"), new { @class = "form-control" })
         </div>
     </div>
 
     <div class="form-group">
         <p>Description</p>
         <div>
-            @Html.DropDownList("DescriptionColumn", new SelectList(ViewBag.textcolumns, "ColumnNumber", "ExampleValue"), "Select the description")
+            @Html.DropDownList("DescriptionColumn", new SelectList(ViewBag.textcolumns, "ColumnNumber", "ExampleValue"), "Select the description", new { @class = "form-control" })
         </div>
     </div>
 
     <div class="form-group">
         <p>Amount</p>
         <div>
-            @Html.DropDownList("AmountColumn", new SelectList(ViewBag.amountcolumns, "ColumnNumber", "ExampleValue"))
+            @Html.DropDownList("AmountColumn", new SelectList(ViewBag.amountcolumns, "ColumnNumber", "ExampleValue"), new { @class = "form-control" })
         </div>
     </div>
 
 
     <div class="form-group">
         <div>
-            <input type="submit" value="Submit" class="btn btn-default" />
+            <input type="submit" value="Submit" class="btn btn-success" />
         </div>
     </div>
 }

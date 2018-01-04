@@ -28,9 +28,6 @@ namespace PersonalFinanceApplication.Models
         [Required]
         public decimal EndAmount { get; set; }
 
-        [Required]
-        public decimal GoalAmount { get; set; }
-
         public decimal CurrentAmount { get; set; }
 
         //[ForeignKey("AccountID")]

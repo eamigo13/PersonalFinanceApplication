@@ -1,51 +1,222 @@
-﻿@model IEnumerable<PersonalFinanceApplication.Models.Budget>
-
+﻿
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "View";
 }
 
-<h2>Index</h2>
+<script>
+    getExpenditures(0);
+    getGoals(0);
+    getIncomes(0);
+    updateBudgetSummary(0);
+</script>
+<br />
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.BudgetName)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Description)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.BeginDate)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.EndDate)
-        </th>
-        <th></th>
-    </tr>
+<!--Budget header information-->
+<div class="row">
+    <div class="col-md-2">
+        <h4>Budget Begin</h4>
+        <input class="form-control" type="date" value="@ViewBag.begindate" />
+    </div>
+    <div class="col-md-2">
+        <h4>Budget End</h4> 
+        <input class="form-control" type="date" value="@ViewBag.enddate" />
+    </div>
+    <div class="col-md-1">
+        <h4>-</h4>
+        <button id="updatebudgetbtn" class="btn btn-success">Update Budget</button>
+    </div>
+</div>
+<br />
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.BudgetName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Description)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.BeginDate)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.EndDate)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.BudgetID }) |
-            @Html.ActionLink("Details", "Details", new { id=item.BudgetID }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.BudgetID })
-        </td>
-    </tr>
-}
 
-</table>
+<!--Tabs for the different parts of the page-->
+<div class="tab">
+    <button class="tablinks" id="defaultOpen" onclick="openTab(event, 'Expenditures')">Expenditures</button>
+    <button class="tablinks" onclick="openTab(event, 'Income')">Income</button>
+    <button class="tablinks" onclick="openTab(event, 'Categories')">Budget</button>
+    <button class="tablinks" onclick="openTab(event, 'Goals')">Goals</button>
+</div>
+
+<!--Expenditures HTML skeleton includes a pie chart of expenditure amount by category,
+    a donut chart with details about each categories used amount and remaining amount,
+    and a list of transactions associated with the category selected-->
+<div class="tabcontent" id="Expenditures">
+    <div class="row">
+        <div class="col-md-6">
+            <h3 style="text-align: center">Expenditures by Category</h3>
+            <!--Canvas for the piechart-->
+            <canvas id="piecanvas"></canvas>
+        </div>
+        <div class="col-md-6">
+            <h3 id="donuttitle" style="text-align: center"></h3>
+            <div id="donutdiv"> <!--Canvas for the donut chart--></div>
+            <br />
+            <p style="text-align: center"><strong>Used: </strong><text id="donutusedp"></text><strong> | Remaining: </strong><text id="donutremainingp"></text></p>
+        </div>
+    </div>
+
+    <!--Row headers for transactions-->
+    <hr />
+    <div class="row">
+        <div class="col-md-2">
+            <strong>Date</strong>
+        </div>
+        <div class="col-md-4">
+            <strong>Description</strong>
+        </div>
+        <div class="col-md-2">
+            <strong>Amount</strong>
+        </div>
+        <div class="col-md-2">
+            <strong>Category</strong>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-success" id="showallbtn">Show All Categories</button>
+        </div>
+    </div>
+    <hr />
+
+    <!--div to be filled by javascript with all transactions of the category selected-->
+    <div id="transactions">
+    </div>
+</div>
+
+<div class="tabcontent" id="Categories">
+
+    <br />
+    <div id="AddCategoryRow">
+        <div class="row">
+            <div class="col-md-2">
+                <strong>Add Category:</strong>
+            </div>
+            <div class="col-md-2">
+                @Html.DropDownList("CategoryID", new SelectList(ViewBag.Categories, "CategoryID", "CategoryName"), "Pick a Category", new { @class = "form-control", @id = "newCategoryName" })
+            </div>
+            <div class="col-md-2">
+                <input id="newCategoryAmount" type="number" class="form-control" placeholder="Amount" />
+            </div>
+            <div class="col-md-2">
+                @Html.DropDownList("CategoryID", new SelectList(ViewBag.BudgetTypes, "BudgetTypeID", "Description"), "Pick a Budget", new { @class = "form-control", @id = "newCategoryType" })
+            </div>
+            <div class="col-md-2">
+                <button id="addCategoryBtn" class="btn btn-success">Add</button>
+            </div>
+        </div>
+    </div>
+    <hr />
+
+
+    <div class="row">
+        <div class="col-md-2">
+            <strong>Category</strong>
+        </div>
+        <div class="col-md-2">
+            <strong>Amount</strong>
+        </div>
+        <div class="col-md-1">
+            <strong>Type</strong>
+        </div>
+    </div>
+    <hr />
+
+    <!--div to be filled by javascript with all of the categories-->
+    <div id="categories">
+        <div class="row">
+            <div class="col-md-2">
+                Other
+            </div>
+            <div class="col-md-2">
+                <input type="number" value="@ViewBag.budget.OtherAmount" class="form-control" id="otheramount" />
+            </div>
+            <div class="col-md-1">
+                One-Time
+            </div>
+            <div class="col-md-1">
+                <button class="btn btn-success" id="updateotheramount">Update</button>
+            </div>
+        </div>
+        <hr />
+    </div>
+
+</div>
+
+<!--Goals HTML skeleton includes a section to add a goal and then a div for all the goals 
+    to be generated by javascript-->
+<div class="tabcontent" id="Goals">
+    <br />
+    <div id="AddGoalRow">
+        <div class="row">
+            <div class="col-md-1">
+                <strong>Add:</strong>
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" type="text" id="GoalNameInput" placeholder="Goal Name" /><br /><br />
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" id="GoalDescriptionInput" rows="1" placeholder="Goal Description"></input><br /><br />
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" type="number" id="GoalBegAmountInput" placeholder="Beginning Amount" /><br /><br />
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" type="number" id="GoalEndAmountInput" placeholder="End Amount" /><br /><br />
+            </div>
+            <div class="col-md-1">
+                <button id="addgoalbtn" class="btn btn-success">Add Goal</button>
+            </div>
+        </div>
+    </div>
+    <hr />
+
+    <div class="row" id="goals">
+
+    </div>
+</div>
+
+<!--Income-->
+<div class="tabcontent" id="Income">
+    <br />
+    <div id="AddIncomeRow">
+        <div class="row">
+            <div class="col-md-2">
+                <strong>Add Income:</strong>
+            </div>
+            <div class="col-md-2">
+                <input id="newIncomeName" type="text" class="form-control" placeholder="Income Name" />
+            </div>
+            <div class="col-md-2">
+                @Html.DropDownList("IncomeID", new SelectList(ViewBag.IncomeTypes, "IncomeTypeID", "Description"), "Pick a Type", new { @class = "form-control", @id = "newIncomeType" })
+            </div>
+            <div class="col-md-2">
+                <input id="newWageAmount" type="number" class="form-control" placeholder="Wage" />
+            </div>
+            <div class="col-md-2">
+                <input id="newHoursAmount" type="number" class="form-control" placeholder="Hours Per Week" />
+            </div>
+            <div class="col-md-2">
+                <button id="addincomebtn" class="btn btn-success">Add</button>
+            </div>
+        </div>
+    </div>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-2">
+            <strong>Description</strong>
+        </div>
+        <div class="col-md-2">
+            <strong>Wage</strong>
+        </div>
+        <div class="col-md-2">
+            <strong>Hours Per Week</strong>
+        </div>
+        <div class="col-md-1">
+            <strong>Type</strong>
+        </div>
+    </div>
+    <hr />
+
+    <div id="incomes">
+
+    </div>
+</div>

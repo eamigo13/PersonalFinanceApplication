@@ -4,6 +4,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - My ASP.NET Application</title>
+    <link rel="stylesheet" href="~/Content/Tabs.css">
+    <link rel="stylesheet" href="~/Content/Modal.css">
+    <link rel="stylesheet" href="~/Content/FixedNavBar.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+    <script src="~/Scripts/Expenditure.js"></script>
+    <script src="~/Scripts/Goals.js"></script>
+    <script src="~/Scripts/Incomes.js"></script>
+    <script src="~/Scripts/UpdateBudgetSummary.js"></script>
+    <script src="~/Scripts/Tabs.js"></script>
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
     @Scripts.Render("~/Scripts/jquery-3.2.1.min.js")
@@ -23,9 +33,9 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                    <li>@Html.ActionLink("About", "About", "Home")</li>
-                    <li>@Html.ActionLink("Contact", "Contact", "Home")</li>
+                    <li>@Html.ActionLink("Budget", "Index", "Budget")</li>
+                    <li>@Html.ActionLink("Upload Transactions", "Index", "Upload")</li>
+                    <li>@Html.ActionLink("Confirm Transactions", "Confirm", "Transactions")</li>
                 </ul>
                 @Html.Partial("_LoginPartial")
             </div>
@@ -33,11 +43,19 @@
     </div>
     <div class="container body-content">
         @RenderBody()
-        <hr />
+        @*<hr />
         <footer>
             <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
-        </footer>
+        </footer>*@
     </div>
+
+    <div class="buttonsummary bottomnavbar">
+        <p><strong>Expected Income: </strong><text id="BudgetSummaryIncome">20,000</text></p>
+        <p><strong>Budgeted Expenditures: </strong><text id="BudgetSummaryExpenditures"></text></p>
+        <p><strong>Goals: </strong><text id="BudgetSummaryGoals"></text></p>
+        <p><strong>Remaining: </strong><text id="BudgetSummaryRemaining"></text></p>
+    </div>
+
 
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
