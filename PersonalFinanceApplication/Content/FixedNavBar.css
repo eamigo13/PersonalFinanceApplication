@@ -1,21 +1,23 @@
 ﻿/* The navigation bar */
 .bottomnavbar {
     overflow: hidden;
-    background-color: #777a7a;
+    background-color: darkgreen;
     position: fixed; /* Set the navbar to fixed position */
     bottom: 0; /* Position the navbar at the bottom of the page */
     width: 100%;
+    margin: auto;
     z-index: 10;
     color: #f2f2f2;
+    text-align: center;
+    height: 50px;
 }
 
 /* Links inside the navbar */
 .bottomnavbar p {
-    float: left;
-    display: block;
+    float: none;
+    display: inline-block;
     color: #f2f2f2;
-    text-align: center;
-    padding: 14px 16px;
+    padding: 30px;
     text-decoration: none;
 }
 

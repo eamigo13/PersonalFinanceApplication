@@ -141,6 +141,8 @@ function addGoal(goal)
             $('#GoalBegAmountInput').val('');
             $('#GoalEndAmountInput').val('');
 
+            updateBudgetSummary();
+
         },
         failure: function (response) {
             alert("Failure");
@@ -166,6 +168,8 @@ function updateGoal(goal) {
 
             generateGoalDonutChart(goal[index]);
 
+            updateBudgetSummary();
+
         },
         failure: function (response) {
             alert("Failure");
@@ -188,6 +192,9 @@ function deleteGoal(goal) {
             var goal = goals.find(function (obj) { return obj.GoalID == response.GoalID; });
             goals.splice(goals.indexOf(goal, 1));
             $('#goaldiv' + response.GoalID).hide();
+
+            updateBudgetSummary();
+
         },
         failure: function (response) {
             alert("Failure");

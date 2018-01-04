@@ -96,6 +96,8 @@ function addIncome(income) {
             $('#newHoursAmount').val('');
             $('#newIncomeName').val('');
 
+            updateBudgetSummary();
+
         },
         failure: function (response) {
             alert("Failure");
@@ -118,6 +120,9 @@ function updateIncome(income) {
             var income = incomes.find(function (obj) { return obj.IncomeID == response.IncomeID; });
             var index = incomes.indexOf(income);
             incomes[index] = response;
+
+            updateBudgetSummary();
+
         },
         failure: function (response) {
             alert("Failure");
@@ -138,8 +143,11 @@ function deleteIncome(income) {
         success: function (response) {
             //alert("success");
             $('#incomediv' + response.IncomeID).hide();
-            var income = income.find(function (obj) { return obj.IncomeID == response.IncomeID; });
+            var income = incomes.find(function (obj) { return obj.IncomeID == response.IncomeID; });
+
             incomes.splice(incomes.indexOf(income, 1));
+
+            updateBudgetSummary();
             
         },
         failure: function (response) {

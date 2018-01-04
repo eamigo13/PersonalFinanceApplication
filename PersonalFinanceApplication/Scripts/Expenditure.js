@@ -131,7 +131,8 @@ function updateBudgetCategory(categoryid, amount) {
             generateDonutChart(categories[index]);
             showDonutChart(categories[index]);
 
-            alert(response.DonutChart + " " + categories[index].DonutChart); 
+            updateBudgetSummary();
+
         },
         failure: function (response) {
             alert("Failure");
@@ -157,6 +158,8 @@ function deleteBudgetCategory(categoryid) {
         contentType: 'application/json; charset=utf-8',
         success: function (response) {
             //alert("Category Successfully Deleted");
+            updateBudgetSummary();
+
         },
         failure: function (response) {
             alert("Failure");
@@ -400,7 +403,10 @@ $(document).ready(function () {
                 generateDonutChart(response);
 
                 //Remove the other class on all transactions corresponsding with added cateogory so they don't show up when clickin the other slice
-                $('.transactionrow.' + response.CategoryName.replace(/\s/g, '')).removeClass("Other");                
+                $('.transactionrow.' + response.CategoryName.replace(/\s/g, '')).removeClass("Other");  
+
+                updateBudgetSummary();
+
             },
             failure: function (response) {
                 alert("Failure");

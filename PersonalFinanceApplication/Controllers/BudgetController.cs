@@ -342,20 +342,114 @@ namespace PersonalFinanceApplication.Controllers
         }
 
         [HttpPost]
-        public JsonResult GetBudgetSummary(Budget budget)       
+        public JsonResult GetBudgetSummary()       
         {
+            Budget budget = db.Budgets.Find(0);
 
-            var budgetsummary = new BudgetSummary();
+            //Variables needed
+            double remainingIncome = 0;
+            double remainingExpenses = 0;
+            double remainingGoals = 0;
+            double budgetsummary = 0;
 
-            //Sum up the incomes of all incomes associated with the budget
+
+            /* 
+             * Determine how much time is left and how much time has past in the budget in 
+             * months, weeks, and days.  These valuse will be used in determining expected 
+             * income (for hourly jobs) and the remaining budget for weekly and monthly budget 
+             * categories.
+             */
+
+            //Today
+            DateTime today = DateTime.Today;
+
+            //Determine how many months, weeks, and days are past
+            TimeSpan pastTS = new TimeSpan();
+            if (today > budget.BeginDate)
+            {
+                //If the the budget is already started, calculate how much time is past in the budget
+                pastTS = today - budget.BeginDate;
+            }
+            else
+            {
+                pastTS = TimeSpan.Zero;
+            }
+
+            double daysPast = pastTS.Days;
+            double weeksPast = daysPast / 7;
+            double monthsPast = daysPast / 30.42; //Avg days in a month is 30.42 in a non-leap year.  
 
 
-            //budgetsummary.ExpectedIncome = db.Budgets.Find(budget.BudgetID).OtherAmount;
-            //budgetsummary.Expenditures = db.BudgetCategories.Where(bc => bc.BudgetID == budget.BudgetID).Sum(bc => bc.Amount);
-            //budgetsummary.Goals = db.Goals.Where(g => g.BudgetID == budget.BudgetID).Sum(g => g.CurrentAmount);
-            //budgetsummary.Remaining = budgetsummary.ExpectedIncome - budgetsummary.Expenditures - budgetsummary.Goals;
+            //Determine how many months, weeks, and days are left
+            TimeSpan remainingTS = new TimeSpan();
+            if (today > budget.EndDate)
+            {
+                remainingTS = TimeSpan.Zero;
+            }
+            else if (today > budget.BeginDate)
+            {
+                //If the the budget is already started, calculate how much time is left in the budget
+                remainingTS = budget.EndDate - today;
+            }
+            else
+            {
+                remainingTS = budget.EndDate - budget.BeginDate;
+            }
 
-            return Json(budgetsummary);
+            double daysRemaining = remainingTS.Days;
+            double weeksRemaining = daysRemaining / 7;
+            double monthsRemaining = daysRemaining / 30.42; //Avg days in a month is 30.42 in a non-leap year.
+
+            //Sum up the remaining incomes of all incomes associated with the budget
+            var incomes = db.Incomes.ToList();
+
+            foreach(var income in incomes)
+            {
+                switch(income.IncomeType.Description)
+                {
+                    case "Salary":
+                        remainingIncome += ((double)income.Wage / 52) * weeksRemaining;
+                        break;
+                    case "Hourly":
+                        remainingIncome += ((double)income.Wage * income.HoursPerWeek) * weeksRemaining;
+                        break;
+                }
+            }
+
+            //Sum up the remaining budgeted expenditures
+            var budgetcategories = db.BudgetCategories.ToList();
+            
+            foreach(var category in budgetcategories)
+            {
+                switch (category.BudgetType.Description)
+                {
+                    case "Weekly":
+                        remainingExpenses += (double)category.Amount * weeksRemaining;
+                        break;
+                    case "Monthly":
+                        remainingExpenses += (double)category.Amount * monthsRemaining;
+                        break;
+                    case "One-Time":
+                        remainingExpenses += (double)category.Amount - calculateUsedAmount(category.CategoryID);
+                        break;
+                }
+            }
+
+            //Add remaining other amount (if more than 0 dollars is remaining
+            double remainingOtherExpense = (double)budget.OtherAmount - calculateOtherAmountUsed();
+            if(remainingOtherExpense > 0)
+            {
+                remainingExpenses += remainingOtherExpense;
+            }
+
+            //Calculate remaining goal amounts
+            var goals = db.Goals;
+
+            remainingGoals = (double)goals.Sum(g => (g.EndAmount - g.CurrentAmount));
+
+            budgetsummary = remainingIncome - remainingGoals - remainingExpenses;
+
+            return Json(Math.Round(budgetsummary, 2));
         }
 
         // GET: Budgets/Create
@@ -531,6 +625,46 @@ namespace PersonalFinanceApplication.Controllers
             newCategory.RemainingAmountThisPeriod = newCategory.Amount - newCategory.UsedAmountThisPeriod;
 
             return newCategory;
+        }
+
+
+        //Calculate the used amount of a category
+        public double calculateUsedAmount(int categoryid)
+        {
+            var budget = db.Budgets.Find(0);
+
+            //Get all transactions within the budget date and related to the category
+            var transactions = db.Transactions.Where(t => t.CategoryID == categoryid
+                                                          && t.Date >= budget.BeginDate
+                                                          && t.Date <= budget.EndDate).ToList();
+
+            //calulate the sume of transaction amounts
+            double usedamount = (double)transactions.Sum(t => t.Amount) * -1;
+
+            return usedamount;
+        }
+
+        public double calculateOtherAmountUsed()
+        {
+            var budget = db.Budgets.Find(0);
+
+            List<string> excludedCategories = new List<string>
+            {
+                "Income",
+                "Account Transfer"
+            };
+
+            var categoriesInBudget = (from c in db.BudgetCategories
+                                      select c.CategoryID).ToList();
+
+            double otherAmountUsed = (double)(from t in new FinanceContext().Transactions
+                                              where !categoriesInBudget.Contains(t.CategoryID)
+                                                 && !excludedCategories.Contains(t.Category.CategoryName)
+                                                 && t.Date >= budget.BeginDate
+                                                 && t.Date <= budget.EndDate
+                                              select t.Amount).Sum() * -1;
+
+            return otherAmountUsed;
         }
     }
 }
