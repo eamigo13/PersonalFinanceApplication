@@ -8,6 +8,29 @@
 
 <script>
 
+    function addVendorAbbrev(abbrev)
+    {
+        $.ajax({
+            type: 'POST', //HTTP POST Method
+            url: '/Vendors/AddAbbrev', // Controller/View
+            data: JSON.stringify(abbrev),
+            dataType: "json",
+            contentType: 'application/json; charset=utf-8',
+            success: function (response) {
+                //alert("Success");
+
+                //Make the modal disappear
+                document.getElementById("VendorAbbrevModal").style.display = "none";
+            },
+            failure: function (response) {
+                alert("Fail");
+            },
+            error: function (response) {
+                alert("Fail");
+            }
+        });
+    }
+
     //Post the TransactionID, CategoryID, and VendorID to the Transactions/Confirm (post)
     function confirm(id, cval, vval) {
 
@@ -26,16 +49,6 @@
             contentType: 'application/json; charset=utf-8',
             success: function (response) {
                 //alert("Success");
-
-                //If the vendor wasn't automatically detected, prompt user to add vendor abbrev
-                if (!response.VendorDetected)
-                {
-                    document.getElementById("VendorAbbrevModal").style.display = "block";
-                    $('#Abbrev').attr('size', response.Description.length);
-                    $('#Abbrev').val(response.Description);
-                    $('#AbbrevVendor').val(response.VendorID);
-
-                }
 
                 //Remove the transaction from the list
                 $('#' + id).remove();
@@ -72,7 +85,16 @@
                 var categoryID = $('#Category-' + transactionID).val();
                 var vendorID = $('#Vendor-' + transactionID).val();
 
-                confirm(transactionID, categoryID, vendorID);
+                var abbrev = {
+                    "VendorID": vendorID,
+                    "Abbrev": $('#Description-' + transactionID).text()
+                }
+
+                if (categoryID != 0 && vendorID != 0)
+                {
+                    addVendorAbbrev(abbrev);
+                    confirm(transactionID, categoryID, vendorID);
+                }
             });
             
         });
@@ -184,25 +206,7 @@
                 "Abbrev": $('#Abbrev').val()
             }
 
-            $.ajax({
-                type: 'POST', //HTTP POST Method
-                url: '/Vendors/AddAbbrev', // Controller/View
-                data: JSON.stringify(abbrev),
-                dataType: "json",
-                contentType: 'application/json; charset=utf-8',
-                success: function (response) {
-                    //alert("Success");
-
-                    //Make the modal disappear
-                    abbrevmodal.style.display = "none";
-                },
-                failure: function (response) {
-                    alert("Fail");
-                },
-                error: function (response) {
-                    alert("Fail");
-                }
-            });
+            addVendorAbbrev(abbrev);
         });
 
         // Get the modal
@@ -271,8 +275,8 @@
         <span class="close">&times;</span>
         <p><strong>We were unable to automatically detect this vendor. Please enter in the part of the description that sets this vendor apart</strong></p>
         <input type="hidden" id="AbbrevVendor" />
-        <input type="text" id="Abbrev" placeholder="Abbreviation" /><br />
-        <input type="button" value="Add" id="AddAbbrev" />
+        <input type="text" id="Abbrev" placeholder="Abbreviation" class="form-control"/><br />
+        <input type="button" value="Add" id="AddAbbrev" class="btn btn-success"/>
     </div>
 
 </div>
@@ -314,6 +318,8 @@
             //These values store the value of the selected VendorID and CategoryID
             var categoryvalue = $("#Category-@transaction.TransactionID").val();
             var vendorvalue = $("#Vendor-@transaction.TransactionID").val();
+            var vendordetected = $("#VendorDetected-@transaction.TransactionID").val();
+            var vendordescription = $("#Description-@transaction.TransactionID").text()
 
             //If the selected value of the category is changed, update the value of categoryvalue
             $("#Category-@transaction.TransactionID").change(function () {
@@ -327,7 +333,24 @@
 
             //Pass the transactionID, CategoryID, and VendorID to the confirm function to be posted to the server
             $("#Confirm-@transaction.TransactionID").click(function () {
-                confirm(@transaction.TransactionID, categoryvalue, vendorvalue)
+
+                if (vendorvalue != 0 && categoryvalue != 0)
+                {
+                    //alert(vendordescription);
+                    //If the vendor wasn't automatically detected, prompt user to add vendor abbrev
+                    if (vendordetected == "False") {
+                        document.getElementById("VendorAbbrevModal").style.display = "block";
+                        $('#Abbrev').attr('size', vendordescription.length);
+                        $('#Abbrev').val(vendordescription);
+                        $('#AbbrevVendor').val(vendorvalue);
+                    }
+
+                    confirm(@transaction.TransactionID, categoryvalue, vendorvalue)
+                }
+                else
+                {
+                    alert("You may not confirm a transaction with an unknown vendor or an unknown category");
+                }
             });
 
         })
@@ -339,7 +362,8 @@
                 @transaction.Date.ToString("MM/dd/yyyy")
             </div>
             <div class="col-md-3">
-                @Html.DisplayFor(modelItem => transaction.Description)
+                <p id="Description-@transaction.TransactionID">@transaction.Description</p>
+                <input type="hidden" id="VendorDetected-@transaction.TransactionID" value="@transaction.VendorDetected.ToString()" />
             </div>
             <div class="col-md-1">
                 @Html.DisplayFor(modelItem => transaction.Amount)
