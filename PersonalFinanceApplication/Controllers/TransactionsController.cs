@@ -100,7 +100,7 @@ namespace PersonalFinanceApplication.Controllers
                 db.SaveChanges();
             }
 
-            return RedirectToAction("Confirm", new { batchid = batchid });
+            return RedirectToAction("Confirm");
         }
 
         // GET: Transactions/Confirm
@@ -246,27 +246,26 @@ namespace PersonalFinanceApplication.Controllers
             transaction.VendorID = confirmed.VendorID;
             transaction.CategoryID = confirmed.CategoryID;
 
-            if(transaction.VendorID != 0 && transaction.CategoryID !=0)
+
+            //Update the status to confirmed 
+            transaction.StatusID = 1;
+
+            //Update the transaction count on the vendor category table or add a new row 
+            try
             {
-                //Update the status to confirmed as long as both the category and vendor are not unknown
-                transaction.StatusID = 1;
-
-                //Update the transaction count on the vendor category table or add a new row as long as neither are unknown
-                try
-                {
-                    var vc = db.VendorCategory.Find(confirmed.VendorID, confirmed.CategoryID);
-                    vc.TransactionCount++;
-                    db.Entry(vc).State = EntityState.Modified;
-                    db.SaveChanges();
-                }
-                catch
-                {
-                    var newVC = new VendorCategory(confirmed.VendorID, confirmed.CategoryID, 1);
-                    db.VendorCategory.Add(newVC);
-                    db.SaveChanges();
-                }
-
+                var vc = db.VendorCategory.Find(confirmed.VendorID, confirmed.CategoryID);
+                vc.TransactionCount++;
+                db.Entry(vc).State = EntityState.Modified;
+                db.SaveChanges();
             }
+            catch
+            {
+                var newVC = new VendorCategory(confirmed.VendorID, confirmed.CategoryID, 1);
+                db.VendorCategory.Add(newVC);
+                db.SaveChanges();
+            }
+
+            
 
             //Save Changes
             if (ModelState.IsValid)

@@ -8,6 +8,8 @@
 
 <script>
 
+    updateBudgetSummary();
+
     function addVendorAbbrev(abbrev)
     {
         $.ajax({
@@ -70,6 +72,12 @@
     
     $(document).ready(function () {
 
+        //If there are no unconfirmed transactions, display a message
+        if (!$(".transaction")[0]) {
+            $('#main').empty();
+            $('#main').append("<br/><h1>There Are No Unconfirmed Transactions</h1>");
+        }
+
         //Confirm all transactions on the page
         //Execute this code when the confirm all button is clicked
         $("#ConfirmAll").click(function () {
@@ -77,6 +85,8 @@
             //Hide all the transactions on the page as they are getting confirmed.
             $(".transaction").hide();
             $(".transactionhr").hide();
+            $(".transactionhdr").hide();
+            $("#main").prepend("<br /><h2>Please wait while we confirm your transactions.</h2>");
 
             //Go through each transaction
             $('.transaction').each(function (i, obj) {
@@ -90,13 +100,50 @@
                     "Abbrev": $('#Description-' + transactionID).text()
                 }
 
-                if (categoryID != 0 && vendorID != 0)
+                if (categoryID !=0 && vendorID != 0)
                 {
-                    addVendorAbbrev(abbrev);
                     confirm(transactionID, categoryID, vendorID);
+                    if ($('#VendorDetected-' + transactionID).val() == "False")
+                    {
+                        addVendorAbbrev(abbrev);
+                    }
                 }
+
             });
+
+            if ($.active > 0) {
+                $(document).ajaxStop(function () {
+                    //location.reload(true);
+                    if (!$(".transaction")[0]) {
+                        $('#main').empty();
+                        $('#main').append("<br/><h1>There Are No Unconfirmed Transactions</h1>");
+                    }
+                    else {
+                        alert("You may not confirm a transaction with an unknown vendor or an unknown category");
+                        $(".transaction").show();
+                        $(".transactionhr").show();
+                        $(".transactionhdr").show();
+                        $("h2").remove();
+                    }
+                });
+            }
+            else {
+                //location.reload(true);
+                if (!$(".transaction")[0]) {
+                    $('#main').empty();
+                    $('#main').append("<br/><h1>There Are No Unconfirmed Transactions</h1>");
+                }
+                else {
+                    alert("You may not confirm a transaction with an unknown vendor or an unknown category");
+                    $(".transaction").show();
+                    $(".transactionhr").show();
+                    $(".transactionhdr").show();
+                    $("h2").remove();
+                }
+            }
+
             
+
         });
 
         //This is used to track the transaction ID of the transaction being maniputlated
@@ -286,7 +333,7 @@
     <br />
     <hr />
 
-    <div class="row">
+    <div class="row transactionhdr">
         <div class="col-md-1">
             <b>Date</b>
         </div>
