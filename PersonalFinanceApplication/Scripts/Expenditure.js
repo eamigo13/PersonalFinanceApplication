@@ -366,6 +366,55 @@ function getRandomColor() {
 
 $(document).ready(function () {
 
+    $('#updateotheramount').click(function () {
+
+        var budget = {
+            "OtherAmount": $('#otheramount').val()
+        }
+
+        $.ajax({
+            type: 'POST', //HTTP GET Method
+            url: '/Budget/UpdateOtherAmount', // Controller/View
+            data: JSON.stringify(budget),
+            dataType: "json",
+            contentType: 'application/json; charset=utf-8',
+            success: function (response) {
+
+            },
+            failure: function (response) {
+                alert("Failure");
+            },
+            error: function (response) {
+                alert("Error");
+            }
+        });
+    });
+
+    $('#updatebudgetbtn').click(function () {
+
+        var budget = {
+            "BeginDate": $('#begindateinput').val(),
+            "EndDate": $('#enddateinput').val()
+        }
+
+        $.ajax({
+            type: 'POST', //HTTP GET Method
+            url: '/Budget/UpdateBudgetDates', // Controller/View
+            data: JSON.stringify(budget),
+            dataType: "json",
+            contentType: 'application/json; charset=utf-8',
+            success: function (response) {
+                location.reload(true);
+            },
+            failure: function (response) {
+                alert("Failure");
+            },
+            error: function (response) {
+                alert("Error");
+            }
+        });
+    });
+
     $('#showallbtn').click(function () {
         $('.transactionrow').show();
         //Show the appropriate donut chart

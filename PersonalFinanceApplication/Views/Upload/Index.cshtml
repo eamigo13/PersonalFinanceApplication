@@ -2,6 +2,7 @@
     ViewBag.Title = "Index";
 }
 
+<script>updateBudgetSummary();</script>
 @using (Html.BeginForm("UploadFile", "Upload", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
     <br/>

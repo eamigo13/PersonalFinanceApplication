@@ -342,6 +342,27 @@ namespace PersonalFinanceApplication.Controllers
         }
 
         [HttpPost]
+        public JsonResult UpdateOtherAmount(Budget b)
+        {
+            var budget = db.Budgets.Find(0);
+            budget.OtherAmount = b.OtherAmount;
+            db.Entry(budget).State = EntityState.Modified;
+            db.SaveChanges();
+            return Json("Other");
+        }
+
+        [HttpPost]
+        public JsonResult UpdateBudgetDates(Budget b)
+        {
+            var budget = db.Budgets.Find(0);
+            budget.BeginDate = b.BeginDate;
+            budget.EndDate = b.EndDate;
+            db.Entry(budget).State = EntityState.Modified;
+            db.SaveChanges();
+            return Json("");
+        }
+
+        [HttpPost]
         public JsonResult GetBudgetSummary()       
         {
             Budget budget = db.Budgets.Find(0);

@@ -7,7 +7,7 @@
     getExpenditures(0);
     getGoals(0);
     getIncomes(0);
-    updateBudgetSummary(0);
+    updateBudgetSummary();
 </script>
 <br />
 
@@ -15,11 +15,11 @@
 <div class="row">
     <div class="col-md-2">
         <h4>Budget Begin</h4>
-        <input class="form-control" type="date" value="@ViewBag.begindate" />
+        <input id="begindateinput" class="form-control" type="date" value="@ViewBag.begindate" />
     </div>
     <div class="col-md-2">
         <h4>Budget End</h4> 
-        <input class="form-control" type="date" value="@ViewBag.enddate" />
+        <input id="enddateinput" class="form-control" type="date" value="@ViewBag.enddate" />
     </div>
     <div class="col-md-1">
         <h4>-</h4>
