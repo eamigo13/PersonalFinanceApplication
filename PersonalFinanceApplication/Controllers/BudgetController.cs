@@ -703,7 +703,7 @@ namespace PersonalFinanceApplication.Controllers
                                                  && !excludedCategories.Contains(t.Category.CategoryName)
                                                  && t.Date >= budget.BeginDate
                                                  && t.Date <= budget.EndDate
-                                              select t.Amount).Sum() * -1;
+                                              select t.Amount).ToList().Sum() * -1;
 
             return otherAmountUsed;
         }
