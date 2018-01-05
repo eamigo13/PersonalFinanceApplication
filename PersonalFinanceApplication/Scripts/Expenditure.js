@@ -379,7 +379,14 @@ $(document).ready(function () {
             dataType: "json",
             contentType: 'application/json; charset=utf-8',
             success: function (response) {
+                var category = categories.find(function (obj) { return obj.CategoryID == response.CategoryID; });
+                var index = categories.indexOf(category);
+                categories[index] = response;
 
+                generateDonutChart(categories[index]);
+                showDonutChart(categories[index]);
+
+                updateBudgetSummary();
             },
             failure: function (response) {
                 alert("Failure");

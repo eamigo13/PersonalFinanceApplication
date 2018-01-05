@@ -122,45 +122,9 @@ namespace PersonalFinanceApplication.Controllers
              * budget type a One-Time budget.
              */
 
-            BudgetCategorySimple other = new BudgetCategorySimple();
+            
 
-            other.CategoryName = "Other";
-            other.CategoryID = -2;
-
-            other.BudgetType = "One-Time";
-
-            other.Amount = (double)budget.OtherAmount;
-
-            other.Transactions = (from t in new FinanceContext().Transactions
-                                  where !categoriesInBudget.Contains(t.CategoryID)
-                                     && !excludedCategories.Contains(t.Category.CategoryName)
-                                     && t.Date >= budget.BeginDate
-                                     && t.Date <= budget.EndDate
-                                  select new SimpleTransaction
-                                  {
-                                      TransactionID = t.TransactionID,
-                                      CategoryID = t.CategoryID,
-                                      CategoryName = t.Category.CategoryName,
-                                      Date = t.Date,
-                                      Description = t.Description,
-                                      Amount = t.Amount
-                                  }).ToArray();
-
-            //Convert the date in all the transactions to shortdates strings
-            foreach (var item in other.Transactions)
-            {
-                item.DateString = item.Date.ToShortDateString();
-            }
-
-            other.UsedAmount = (double)other.Transactions.Sum(t => t.Amount) * -1;
-            other.UsedAmountThisPeriod = other.UsedAmount;
-
-            other.UsedAmountPerPeriod = other.UsedAmount;
-
-            other.RemainingAmount = other.Amount - other.UsedAmount;
-            other.RemainingAmountThisPeriod = other.RemainingAmount;
-
-            budgetCategories[1] = other;
+            budgetCategories[1] = CreateOtherSimpleBudgetCategory();
 
             
 
@@ -348,7 +312,7 @@ namespace PersonalFinanceApplication.Controllers
             budget.OtherAmount = b.OtherAmount;
             db.Entry(budget).State = EntityState.Modified;
             db.SaveChanges();
-            return Json("Other");
+            return Json(CreateOtherSimpleBudgetCategory());
         }
 
         [HttpPost]
@@ -646,6 +610,62 @@ namespace PersonalFinanceApplication.Controllers
             newCategory.RemainingAmountThisPeriod = newCategory.Amount - newCategory.UsedAmountThisPeriod;
 
             return newCategory;
+        }
+
+        public BudgetCategorySimple CreateOtherSimpleBudgetCategory()
+        {
+            var budget = db.Budgets.Find(0);
+
+            //We don't want to incluce "Income" transactions and "Account Transfer" transactions in our calculations of expenditures
+            List<string> excludedCategories = new List<string>
+            {
+                "Income",
+                "Account Transfer"
+            };
+
+            //Create a list of category ids in the budget to be used in different linq queries
+            List<int> categoriesInBudget = (from c in db.BudgetCategories
+                                            select c.CategoryID).ToList();
+
+            BudgetCategorySimple other = new BudgetCategorySimple();
+
+            other.CategoryName = "Other";
+            other.CategoryID = -2;
+
+            other.BudgetType = "One-Time";
+
+            other.Amount = (double)budget.OtherAmount;
+
+            other.Transactions = (from t in new FinanceContext().Transactions
+                                  where !categoriesInBudget.Contains(t.CategoryID)
+                                     && !excludedCategories.Contains(t.Category.CategoryName)
+                                     && t.Date >= budget.BeginDate
+                                     && t.Date <= budget.EndDate
+                                  select new SimpleTransaction
+                                  {
+                                      TransactionID = t.TransactionID,
+                                      CategoryID = t.CategoryID,
+                                      CategoryName = t.Category.CategoryName,
+                                      Date = t.Date,
+                                      Description = t.Description,
+                                      Amount = t.Amount
+                                  }).ToArray();
+
+            //Convert the date in all the transactions to shortdates strings
+            foreach (var item in other.Transactions)
+            {
+                item.DateString = item.Date.ToShortDateString();
+            }
+
+            other.UsedAmount = (double)other.Transactions.Sum(t => t.Amount) * -1;
+            other.UsedAmountThisPeriod = other.UsedAmount;
+
+            other.UsedAmountPerPeriod = other.UsedAmount;
+
+            other.RemainingAmount = other.Amount - other.UsedAmount;
+            other.RemainingAmountThisPeriod = other.RemainingAmount;
+
+            return other;
         }
 
 
